@@ -17,10 +17,10 @@
             <url>https://jcenter.bintray.com/</url>
         </repository>
     </repositories>
-    <groupId>com.itpaths.rules.price</groupId>
-    <artifactId>price-poc</artifactId>
+    <groupId>com.itpaths.rules.priceRequest</groupId>
+    <artifactId>priceRequest-poc</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>rule-price-calculation</name>
+    <name>rule-priceRequest-calculation</name>
     <description>Springboot with Drools</description>
 
     <properties>

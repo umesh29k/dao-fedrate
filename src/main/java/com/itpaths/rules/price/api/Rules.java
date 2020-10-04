@@ -1,7 +1,7 @@
 package com.itpaths.rules.price.api;
 
 import com.itpaths.rules.price.config.TrackAgendaEventListener;
-import com.itpaths.rules.price.model.Price;
+import com.itpaths.rules.price.model.PriceRequest;
 import org.apache.logging.log4j.LogManager;
 import org.drools.decisiontable.DecisionTableProviderImpl;
 import org.kie.api.KieServices;
@@ -71,16 +71,16 @@ public class Rules {
         DecisionTableProviderImpl decisionTableProvider = new DecisionTableProviderImpl();
         Resource dt = ResourceFactory.newUrlResource(url);
         String drl = decisionTableProvider.loadFromResource(dt, null);
+        System.out.println(drl);
         return drl;
     }
 
-    public Price calculatePrice(Price price){
+    public PriceRequest calculatePrice(PriceRequest priceRequest){
         KieSession ks = priceContainer.newKieSession("priceSession");
-        ks.insert(price);
+        ks.insert(priceRequest);
         ks.fireAllRules();
         ks.destroy();
         ks.dispose();
-        System.out.println("This is test");
-        return price;
+        return priceRequest;
     }
 }

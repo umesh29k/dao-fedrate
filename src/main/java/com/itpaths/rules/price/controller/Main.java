@@ -1,7 +1,7 @@
 package com.itpaths.rules.price.controller;
 
-import com.itpaths.rules.price.model.Payment;
-import com.itpaths.rules.price.model.Price;
+import com.itpaths.rules.price.model.PriceResult;
+import com.itpaths.rules.price.model.PriceRequest;
 import com.itpaths.rules.price.serice.PaymentService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -23,10 +23,10 @@ public class Main {
             example = "Vatsal",
             required = true)
     @PostMapping("/products/subscriptions")
-    public Payment calculatePayment(@RequestBody Price price) {
-        Payment payment = new Payment();
-        paymentService.calculate(price);
-        return new Payment();
+    public PriceResult calculatePayment(@RequestBody PriceRequest priceRequest) {
+        PriceResult priceResult = new PriceResult();
+        paymentService.calculate(priceRequest);
+        return new PriceResult();
     }
 
 }

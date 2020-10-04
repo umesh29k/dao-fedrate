@@ -7,7 +7,7 @@ import java.util.Date;
 
 @lombok.Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class Price {
+public class PriceRequest {
     @ApiModelProperty(notes = "Price Code", example = "XSDF")
     private String price_cd;
     @ApiModelProperty(notes = "Class ID", example = "12")
@@ -264,5 +264,37 @@ public class Price {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    @Override
+    public String toString() {
+        return "PriceRequest{" +
+                "price_cd='" + price_cd + '\'' +
+                ", class_id='" + class_id + '\'' +
+                ", itnry_id='" + itnry_id + '\'' +
+                ", voygr_id='" + voygr_id + '\'' +
+                ", event_only_flag='" + event_only_flag + '\'' +
+                ", mtrip_flag='" + mtrip_flag + '\'' +
+                ", city_net_flag='" + city_net_flag + '\'' +
+                ", qty=" + qty +
+                ", qtyad=" + qtyad +
+                ", qtych=" + qtych +
+                ", qtyb1=" + qtyb1 +
+                ", qtyb2=" + qtyb2 +
+                ", qtyb3=" + qtyb3 +
+                ", dprtr_tstatn='" + dprtr_tstatn + '\'' +
+                ", dstntn_tstatn='" + dstntn_tstatn + '\'' +
+                ", via_tstatn='" + via_tstatn + '\'' +
+                ", altrnv_tstatn='" + altrnv_tstatn + '\'' +
+                ", birthdate=" + birthdate +
+                ", durtn_id='" + durtn_id + '\'' +
+                ", cntngnt_id='" + cntngnt_id + '\'' +
+                ", orgnsm_id='" + orgnsm_id + '\'' +
+                ", tkt_type_id='" + tkt_type_id + '\'' +
+                ", diabolo_amt_single=" + diabolo_amt_single +
+                ", diabolo_amt_total=" + diabolo_amt_total +
+                ", price_natr_id='" + price_natr_id + '\'' +
+                ", status='" + status + '\'' +
+                '}';
     }
 }

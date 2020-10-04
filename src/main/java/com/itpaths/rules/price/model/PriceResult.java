@@ -6,7 +6,7 @@ import lombok.Data;
 
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class Payment {
+public class PriceResult {
     @ApiModelProperty(notes = "total price", example = "0.0 EUR")
     private String total_price_eur;
     @ApiModelProperty(notes = "total PP price", example = "0.0 EUR")
@@ -56,5 +56,16 @@ public class Payment {
 
     public void setDiabolo_amt_eur(String diabolo_amt_eur) {
         this.diabolo_amt_eur = diabolo_amt_eur;
+    }
+
+    @Override
+    public String toString() {
+        return "PriceResult{" +
+                "total_price_eur='" + total_price_eur + '\'' +
+                ", total_pp_price_eur='" + total_pp_price_eur + '\'' +
+                ", mobib_price_eur='" + mobib_price_eur + '\'' +
+                ", mobib_tarif_code='" + mobib_tarif_code + '\'' +
+                ", diabolo_amt_eur='" + diabolo_amt_eur + '\'' +
+                '}';
     }
 }
