@@ -1,5 +1,7 @@
-package com.itpaths.rules.price.config;
+package com.itpaths.rules.price.api;
 
+import com.itpaths.rules.price.config.TrackAgendaEventListener;
+import com.itpaths.rules.price.model.Price;
 import org.apache.logging.log4j.LogManager;
 import org.drools.decisiontable.DecisionTableProviderImpl;
 import org.kie.api.KieServices;
@@ -12,6 +14,7 @@ import org.kie.api.conf.EqualityBehaviorOption;
 import org.kie.api.conf.EventProcessingOption;
 import org.kie.api.io.Resource;
 import org.kie.api.runtime.KieContainer;
+import org.kie.api.runtime.KieSession;
 import org.kie.api.runtime.conf.ClockTypeOption;
 import org.kie.internal.builder.*;
 import org.kie.internal.io.ResourceFactory;
@@ -26,11 +29,14 @@ public class Rules {
     private final Logger log = LogManager.getLogger("pc-logger");
     private TrackAgendaEventListener trackAgendaEventListener;
     private KieContainer priceContainer;
-    String baseUrl = new File("C:\\Users\\umesh\\Documents\\price-poc\\src\\main\\resources\\com\\rules\\").toURI().toASCIIString();
-    String priceUrl = baseUrl + "amazonOffers.xls";
+    String baseUrl = new File("C:\\Users\\umesh\\Documents\\" +
+            "price-poc\\src\\main\\resources\\" +
+            "com\\itpaths\\rules\\").toURI().toASCIIString();
+    String priceUrl = baseUrl + "price.xlsx";
 
     public Rules(){
-        priceContainer = loadContainer(priceUrl, "src/main/resource/model/price.drl", "com.itpaths.rules.price", "priceSession");
+        priceContainer = loadContainer(priceUrl, "src/main/resource/model/price.drl",
+                "com.itpaths.rules", "priceSession");
     }
 
     private KieContainer loadContainer(String priceUrl, String drl, String packageName, String sessionName) {
@@ -61,11 +67,20 @@ public class Rules {
 
     private String getDrl(String url) {
         DecisionTableConfiguration configuration = KnowledgeBuilderFactory.newDecisionTableConfiguration();
-        configuration.setInputType(DecisionTableInputType.XLS);
+        configuration.setInputType(DecisionTableInputType.XLSX);
         DecisionTableProviderImpl decisionTableProvider = new DecisionTableProviderImpl();
         Resource dt = ResourceFactory.newUrlResource(url);
         String drl = decisionTableProvider.loadFromResource(dt, null);
         return drl;
     }
 
+    public Price calculatePrice(Price price){
+        KieSession ks = priceContainer.newKieSession("priceSession");
+        ks.insert(price);
+        ks.fireAllRules();
+        ks.destroy();
+        ks.dispose();
+        System.out.println("This is test");
+        return price;
+    }
 }
