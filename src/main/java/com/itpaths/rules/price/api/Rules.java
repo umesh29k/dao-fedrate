@@ -81,10 +81,9 @@ public class Rules {
         return drl;
     }
 
-    public Formula ticketPrice(PriceRequest priceRequest, Formula formula){
+    public Formula ticketPrice(Formula formula){
         formula.setApply(true);
         KieSession ks = ticketContainer.newKieSession("ticketSession");
-        ks.insert(priceRequest);
         ks.insert(formula);
         ks.fireAllRules();
         ks.destroy();

@@ -10,7 +10,9 @@ import org.springframework.stereotype.Service;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class PriceService {
@@ -26,6 +28,30 @@ public class PriceService {
     private double tkt_price_eur = 0;
     private double diabolo_amt_total = 0;
     private double diabolo_amt_single = 0;
+    Map<Integer, String> class_id = new HashMap();
+    Map<Integer, String> price_cd = new HashMap<>();
+
+    public PriceService(){
+        class_id.put(1, "RTP_T_CL_FIRST");
+        class_id.put(2, "RTP_T_CL_SECOND");
+        class_id.put(3, "RTP_T_CL_BOTH");
+        class_id.put(4, "RTP_T_CL_IRRELEVANT");
+        class_id.put(5, "RTP_T_CL_UPGRADE");
+
+        price_cd.put(1,"RTP_T_PN_CLASSIC");
+        price_cd.put(2,"RTP_T_PN_ZONE");
+        price_cd.put(3,"RTP_T_PN_FIXED");
+        price_cd.put(4,"RTP_T_PN_CLASSIC_PLUS");
+        price_cd.put(5,"RTP_T_PN_ZONE_PLUS");
+        price_cd.put(6,"RTP_T_PN_FIXED_PLUS");
+        price_cd.put(7,"RTP_T_PN_CLASSIC_MAX");
+        price_cd.put(8,"RTP_T_PN_GEOG");
+        price_cd.put(9,"RTP_T_PN_GEOG_PLUS");
+        price_cd.put(10,"RTP_T_PN_OTHER");
+        price_cd.put(11,"RTP_T_PN_MTARIFF");
+        price_cd.put(12,"RTP_T_PN_MTARIFF_PLUS");
+        price_cd.put(13,"RTP_T_PN_MTARIFF_MAX");
+    }
 
     public PriceResult calculate(PriceRequest priceRequest) {
         /**
@@ -34,8 +60,11 @@ public class PriceService {
         Formula formula = new Formula();
         PriceResult priceResult = new PriceResult();
 
+        formula.setPrice_natr_id(price_cd.get(priceRequest.getPrice_cd()));
+        formula.setTkt_type_id(priceRequest.getTkt_type_id());
+
         //Invoke Rules
-        formula = rules.ticketPrice(priceRequest, formula);
+        formula = rules.ticketPrice(formula);
 
         if (formula.getMethod() != null)
             tkt_price_eur = getTkt_price_eur(formula);
