@@ -1,6 +1,7 @@
 package com.itpaths.rules.price.api;
 
 import com.itpaths.rules.price.config.TrackAgendaEventListener;
+import com.itpaths.rules.price.dto.Formula;
 import com.itpaths.rules.price.model.PriceRequest;
 import org.apache.logging.log4j.LogManager;
 import org.drools.decisiontable.DecisionTableProviderImpl;
@@ -28,15 +29,20 @@ import java.io.File;
 public class Rules {
     private final Logger log = LogManager.getLogger("pc-logger");
     private TrackAgendaEventListener trackAgendaEventListener;
-    private KieContainer priceContainer;
+    private KieContainer priceContainer, ticketContainer;
+
     String baseUrl = new File("C:\\Users\\umesh\\Documents\\" +
             "price-poc\\src\\main\\resources\\" +
             "com\\itpaths\\rules\\").toURI().toASCIIString();
+
     String priceUrl = baseUrl + "price.xlsx";
+    String ticketUrl = baseUrl + "formula.xlsx";
 
     public Rules(){
         priceContainer = loadContainer(priceUrl, "src/main/resource/model/price.drl",
                 "com.itpaths.rules", "priceSession");
+        ticketContainer = loadContainer(ticketUrl, "src/main/resource/model/ticket.drl",
+                "com.itpaths.rules", "ticketSession");
     }
 
     private KieContainer loadContainer(String priceUrl, String drl, String packageName, String sessionName) {
@@ -75,12 +81,14 @@ public class Rules {
         return drl;
     }
 
-    public PriceRequest calculatePrice(PriceRequest priceRequest){
-        KieSession ks = priceContainer.newKieSession("priceSession");
+    public Formula ticketPrice(PriceRequest priceRequest, Formula formula){
+        formula.setApply(true);
+        KieSession ks = ticketContainer.newKieSession("ticketSession");
         ks.insert(priceRequest);
+        ks.insert(formula);
         ks.fireAllRules();
         ks.destroy();
         ks.dispose();
-        return priceRequest;
+        return formula;
     }
 }
