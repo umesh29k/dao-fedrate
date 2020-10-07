@@ -11,22 +11,20 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@ApiOperation(value = "Create user",
-        notes = "This method creates a new user")
+@ApiOperation(value = "Price Data",
+        notes = "Get price details")
 public class Main {
     @Autowired
     private PriceService priceService;
     @ApiParam(
-            name = "firstName",
-            type = "String",
-            value = "First Name of the user",
-            example = "Vatsal",
+            name = "Object",
+            type = "PriceRequest",
+            value = "Price retrieval request criteria",
+            example = "Get Price Details",
             required = true)
-    @PostMapping("/products/subscriptions")
+    @PostMapping("/get/priceDetails")
     public PriceResult calculatePayment(@RequestBody PriceRequest priceRequest) {
-        PriceResult priceResult = new PriceResult();
-        priceService.calculate(priceRequest);
-        return new PriceResult();
+        PriceResult priceResult = priceService.calculate(priceRequest);
+        return priceResult;
     }
-
 }

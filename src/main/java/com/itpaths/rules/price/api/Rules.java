@@ -6,9 +6,7 @@ import com.itpaths.rules.price.model.PriceRequest;
 import org.apache.logging.log4j.LogManager;
 import org.drools.decisiontable.DecisionTableProviderImpl;
 import org.kie.api.KieServices;
-import org.kie.api.builder.KieBuilder;
-import org.kie.api.builder.KieFileSystem;
-import org.kie.api.builder.Message;
+import org.kie.api.builder.*;
 import org.kie.api.builder.model.KieModuleModel;
 import org.kie.api.builder.model.KieSessionModel;
 import org.kie.api.conf.EqualityBehaviorOption;
@@ -22,43 +20,71 @@ import org.kie.internal.io.ResourceFactory;
 import org.springframework.context.annotation.Configuration;
 
 import org.apache.logging.log4j.Logger;
+import org.springframework.stereotype.Service;
 
 import java.io.File;
 
-@Configuration("droolsImpl")
+@Service
 public class Rules {
     private final Logger log = LogManager.getLogger("pc-logger");
     private TrackAgendaEventListener trackAgendaEventListener;
-    private KieContainer priceContainer, ticketContainer;
+    private KieContainer priceCodeContainer, formulaContainer;
 
     String baseUrl = new File("C:\\Users\\umesh\\Documents\\" +
             "price-poc\\src\\main\\resources\\" +
             "com\\itpaths\\rules\\").toURI().toASCIIString();
 
-    String priceUrl = baseUrl + "price.xlsx";
-    String ticketUrl = baseUrl + "formula.xlsx";
+    String formulaUrl = baseUrl + "formula.xls";
+    String priceCodeUrl = baseUrl + "price_code.xls";
 
-    public Rules(){
-        priceContainer = loadContainer(priceUrl, "src/main/resource/model/price.drl",
-                "com.itpaths.rules", "priceSession");
-        ticketContainer = loadContainer(ticketUrl, "src/main/resource/model/ticket.drl",
-                "com.itpaths.rules", "ticketSession");
+    public Rules() {
+        formulaContainer = loadFormulaContainer(formulaUrl);
+        priceCodeContainer = loadPriceCodeContainer(formulaUrl);
     }
 
-    private KieContainer loadContainer(String priceUrl, String drl, String packageName, String sessionName) {
+    private KieContainer loadPriceCodeContainer(String url) {
+        getDrl(url);
+        Resource priceCode = ResourceFactory
+                .newClassPathResource("com/itpaths/rules/price_code.xls", getClass());
+        KieServices ks = KieServices.Factory.get();
+        KieFileSystem kieFileSystem = ks.newKieFileSystem()
+                .write(priceCode);
+        KieBuilder kb = ks.newKieBuilder(kieFileSystem)
+                .buildAll();
+        KieRepository kieRepository = ks.getRepository();
+        ReleaseId krDefaultReleaseId = kieRepository.getDefaultReleaseId();
+        KieContainer kc = ks.newKieContainer(krDefaultReleaseId);
+        return kc;
+    }
+
+    private KieContainer loadFormulaContainer(String url) {
+        getDrl(url);
+        Resource formula = ResourceFactory
+                .newClassPathResource("com/itpaths/rules/formula.xls", getClass());
+        KieServices ks = KieServices.Factory.get();
+        KieFileSystem kieFileSystem = ks.newKieFileSystem()
+                .write(formula);
+        KieBuilder kb = ks.newKieBuilder(kieFileSystem)
+                .buildAll();
+        KieRepository kieRepository = ks.getRepository();
+        ReleaseId krDefaultReleaseId = kieRepository.getDefaultReleaseId();
+        KieContainer kc = ks.newKieContainer(krDefaultReleaseId);
+        return kc;
+    }
+
+    private KieContainer getContainerByURI(String url, String drl, String packageName, String sessionName) {
         KieServices ks = KieServices.Factory.get();
         KieFileSystem kfs = ks.newKieFileSystem();
         KieModuleModel kmm = ks.newKieModuleModel();
         modelSetup(kmm, packageName, sessionName);
         kfs.writeKModuleXML((kmm.toXML()));
-        kfs.write(drl, getDrl(priceUrl));
+        kfs.write(drl, getDrl(url));
         KieBuilder kb = ks.newKieBuilder(kfs);
         kb.buildAll();
-        if(kb.getResults().hasMessages(Message.Level.ERROR)){
+        if (kb.getResults().hasMessages(Message.Level.ERROR)) {
             throw new RuntimeException("Build error: \n" + kb.getResults().toString());
         }
-        KieContainer kc = ks.newKieContainer(ks.getRepository().getDefaultReleaseId());
-        return kc;
+        return ks.newKieContainer(ks.getRepository().getDefaultReleaseId());
     }
 
     private void modelSetup(KieModuleModel kmm, String packageName, String sessionName) {
@@ -73,7 +99,7 @@ public class Rules {
 
     private String getDrl(String url) {
         DecisionTableConfiguration configuration = KnowledgeBuilderFactory.newDecisionTableConfiguration();
-        configuration.setInputType(DecisionTableInputType.XLSX);
+        configuration.setInputType(DecisionTableInputType.XLS);
         DecisionTableProviderImpl decisionTableProvider = new DecisionTableProviderImpl();
         Resource dt = ResourceFactory.newUrlResource(url);
         String drl = decisionTableProvider.loadFromResource(dt, null);
@@ -81,9 +107,19 @@ public class Rules {
         return drl;
     }
 
-    public Formula ticketPrice(Formula formula){
+    public Formula getMethod(Formula formula) {
         formula.setApply(true);
-        KieSession ks = ticketContainer.newKieSession("ticketSession");
+        KieSession ks = priceCodeContainer.newKieSession();
+        ks.insert(formula);
+        ks.fireAllRules();
+        ks.destroy();
+        ks.dispose();
+        return formula;
+    }
+
+    public Formula getFormula(Formula formula) {
+        formula.setApply(true);
+        KieSession ks = priceCodeContainer.newKieSession();
         ks.insert(formula);
         ks.fireAllRules();
         ks.destroy();
