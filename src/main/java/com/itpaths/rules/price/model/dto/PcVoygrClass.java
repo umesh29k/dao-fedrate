@@ -1,14 +1,14 @@
-package com.itpaths.rules.price.dto;
+package com.itpaths.rules.price.model.dto;
 
 import lombok.Data;
 
 /**
  * 
  * @author umesh
- * Create at 2020-10-07 04:52
+ * Create at 2020-10-07 05:12
  */
 @Data
-public class PcVoygr {
+public class PcVoygrClass {
 
     /**
      * 
@@ -28,30 +28,25 @@ public class PcVoygr {
     /**
      * 
      */
-    public Integer pcRdctnCffcnt;
+    public String classId;
 
     /**
      * 
      */
-    public Integer pcSuplmntAmt;
+    public Integer pcDfltAmt;
 
     /**
      * 
      */
-    public Integer pcUplftAmt;
+    public Integer pcMaxAmt;
 
     /**
      * 
      */
-    public Double pcSuplmntAmtEur;
+    public Integer pcDfltAmtEur;
 
     /**
      * 
      */
-    public Integer pcUplftAmtEur;
-
-    /**
-     * 
-     */
-    public String pcVoygrClassMsk;
+    public Integer pcMaxAmtEur;
 }

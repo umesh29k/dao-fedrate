@@ -1,13 +1,7 @@
-package com.itpaths.rules.price.dao;
+package com.itpaths.rules.price.model.dao;
 
 import lombok.*;
 import java.time.OffsetDateTime;
-import java.time.OffsetDateTime;
-import java.time.OffsetDateTime;
-import java.math.BigDecimal;
-import java.time.OffsetDateTime;
-import java.math.BigDecimal;
-import java.math.BigDecimal;
 import java.math.BigDecimal;
 import javax.persistence.*;
 

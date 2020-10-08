@@ -1,4 +1,4 @@
-package com.itpaths.rules.price.dto;
+package com.itpaths.rules.price.model.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 

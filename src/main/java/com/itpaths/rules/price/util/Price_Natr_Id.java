@@ -1,6 +1,6 @@
 package com.itpaths.rules.price.util;
 
-import com.itpaths.rules.price.dto.Formula;
+import com.itpaths.rules.price.model.dto.Formula;
 import com.itpaths.rules.price.model.PriceRequest;
 
 public class Price_Natr_Id {

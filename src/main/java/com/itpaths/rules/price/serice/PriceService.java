@@ -1,7 +1,7 @@
 package com.itpaths.rules.price.serice;
 
 import com.itpaths.rules.price.api.Rules;
-import com.itpaths.rules.price.dto.*;
+import com.itpaths.rules.price.model.dto.*;
 import com.itpaths.rules.price.exception.ApiException;
 import com.itpaths.rules.price.model.PriceRequest;
 import com.itpaths.rules.price.model.PriceResult;
@@ -114,8 +114,14 @@ public class PriceService {
                                 params[11] = tktPrmtr.getTpNormCffcntClass1();
                                 params[13] = tktPrmtr.getTpNormMinPriceClass1Eur();
                                 params[15] = 0.0;
+                                //example RT_CLASSIC
                                 //What is the formula, need to be invoked?
                                 //if error, then throw SAS_TT_FORMULA_ERROR
+                                try {
+                                    trf_pp_price_eur = invokeForumla(priceCode);
+                                } catch (InvocationTargetException e) {
+                                    priceCode.setTrfPpFrmlId("SAS_DBF_TT_FORMULA");
+                                }
 
                                 //calculate price 2nd class
                                 double res2nd = 0;
@@ -124,10 +130,17 @@ public class PriceService {
                                 //Invoke Formula
                                 //What is the formula, need to be invoked?
                                 //if error, then throw SAS_TT_FORMULA_ERROR
+                                //ex invoke RT_CLASSIC
+                                try {
+                                    trf_pp_price_eur = invokeForumla(priceCode);
+                                } catch (InvocationTargetException e) {
+                                    priceCode.setTrfPpFrmlId("SAS_DBF_TT_FORMULA");
+                                }
 
                                 //calculate price upgrade
                                 params[25] = res1st;
                                 params[26] = res2nd;
+                                //ex RT_CLASSIC_UPGRADE
                                 try {
                                     trf_pp_price_eur = invokeForumla(priceCode);
                                 } catch (InvocationTargetException e) {

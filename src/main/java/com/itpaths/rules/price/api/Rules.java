@@ -1,8 +1,7 @@
 package com.itpaths.rules.price.api;
 
 import com.itpaths.rules.price.config.TrackAgendaEventListener;
-import com.itpaths.rules.price.dto.Formula;
-import com.itpaths.rules.price.model.PriceRequest;
+import com.itpaths.rules.price.model.dto.Formula;
 import org.apache.logging.log4j.LogManager;
 import org.drools.decisiontable.DecisionTableProviderImpl;
 import org.kie.api.KieServices;
@@ -17,7 +16,6 @@ import org.kie.api.runtime.KieSession;
 import org.kie.api.runtime.conf.ClockTypeOption;
 import org.kie.internal.builder.*;
 import org.kie.internal.io.ResourceFactory;
-import org.springframework.context.annotation.Configuration;
 
 import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;

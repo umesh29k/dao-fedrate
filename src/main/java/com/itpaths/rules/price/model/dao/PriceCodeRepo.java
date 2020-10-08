@@ -1,4 +1,4 @@
-package com.itpaths.rules.price.dao;
+package com.itpaths.rules.price.model.dao;
 
 import java.util.List;
 
