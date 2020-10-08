@@ -1,5 +1,6 @@
 package com.itpaths.rules.price.serice;
 
+import com.itpaths.rules.price.model.PriceRequest;
 import com.itpaths.rules.price.model.dto.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -74,7 +75,7 @@ public class DataRetrievalService {
     public PcVoygr getPcVoyger(String id) {
         PcVoygr pcVoygr = new PcVoygr();
         SqlParameterSource namedParameters = new MapSqlParameterSource();
-        List<Map> rows = jdbcTemplate.queryForList(tkt_prmtr, namedParameters, Map.class);
+        List<Map> rows = jdbcTemplate.queryForList(pc_voygr, namedParameters, Map.class);
         for (Map<String, Object> row : rows) {
             pcVoygr.setPcSuplmntAmtEur((Double) row.get("PC_SUPLMNT_AMT_EUR"));
             pcVoygr.setPcUplftAmtEur((Integer) row.get("PC_UPLFT_AMT_EUR"));
@@ -90,7 +91,7 @@ public class DataRetrievalService {
                 .addValue("price_cd", price_cd)
                 .addValue("class_id", class_id.toString())
                 .addValue("pc_vrsn", pc_vrsn);
-        List<Map> rows = jdbcTemplate.queryForList(tkt_prmtr, namedParameters, Map.class);
+        List<Map> rows = jdbcTemplate.queryForList(pc_voygr_class, namedParameters, Map.class);
         for (Map<String, Object> row : rows) {
             pcVoygrClass.setClassId((String) row.get("PC_SUPLMNT_AMT_EUR"));
             pcVoygrClass.setPcMaxAmtEur((Integer) row.get("pc_max_amt_eur"));
@@ -98,15 +99,70 @@ public class DataRetrievalService {
         return pcVoygrClass;
     }
 
-    public CityNetSupplmnt getcity_net_supplmnt(){
-        return null;
+    public CityNetSupplmnt getCity_net_supplmnt() {
+        final String pc_limit = "SELECT * FROM `city_net_supplmnt`";
+        CityNetSupplmnt cityNetSupplmnt = new CityNetSupplmnt();
+        SqlParameterSource namedParameters = new MapSqlParameterSource();
+                //.addValue("price_cd", price_cd);
+        List<Map> rows = jdbcTemplate.queryForList(pc_limit, namedParameters, Map.class);
+        for (Map<String, Object> row : rows) {
+            cityNetSupplmnt.setCndStktFxdChargeSEur((Double) row.get("CND_STKT_FXD_CHARGE_S_EUR"));
+        }
+        return cityNetSupplmnt;
     }
 
-    public Orgnsm getorgnsm(){
-        return null;
+    public Orgnsm getOrgnsm() {
+        final String pc_limit = "SELECT * FROM `ORGNSM`";
+        Orgnsm orgnsm = new Orgnsm();
+        SqlParameterSource namedParameters = new MapSqlParameterSource();
+        List<Map> rows = jdbcTemplate.queryForList(pc_limit, namedParameters, Map.class);
+        for (Map<String, Object> row : rows) {
+            orgnsm.setPcRdctnCffcnt((Integer) row.get("PC_RDCTN_CFFCNT"));
+        }
+        return orgnsm;
     }
 
-    public Calndr getcalndr(){
-        return null;
+    public Calndr getCalndr() {
+        final String pc_limit = "SELECT * FROM `CALNDR`";
+        Calndr calndr = new Calndr();
+        SqlParameterSource namedParameters = new MapSqlParameterSource();
+        List<Map> rows = jdbcTemplate.queryForList(pc_limit, namedParameters, Map.class);
+        for (Map<String, Object> row : rows) {
+            calndr.setCalndrDayInWk((String) row.get("CALNDR_DAY_IN_WK"));
+        }
+        return calndr;
+    }
+
+    public PcLimit getPcLimit(String price_cd, Integer pcVrsn, String voygr_id, double distance, double qty) {
+        final String pc_limit = "SELECT * FROM `pc_limit` where price_cd=:price_cd, pc_vrsn=:pc_vrsn, " +
+                "voygr_id=:voygr_id, pc_dstnc=:pc_dstnc, pc_no_in_grp=:pc_no_in_grp";
+        PcLimit pcLimit = new PcLimit();
+        SqlParameterSource namedParameters = new MapSqlParameterSource()
+                .addValue("price_cd", price_cd)
+                .addValue("pc_vrsn", pcVrsn)
+                .addValue("voygr_id", voygr_id)
+                .addValue("pc_dstnc", distance)
+                .addValue("pc_no_in_grp", qty);
+        List<Map> rows = jdbcTemplate.queryForList(pc_limit, namedParameters, Map.class);
+        for (Map<String, Object> row : rows) {
+            pcLimit.setPcLimitAmtEur((Double) row.get("PC_LIMIT_AMT_EUR"));
+            pcLimit.setPcLimitAmt((Integer) row.get("PC_LIMIT_AMT"));
+        }
+        return pcLimit;
+    }
+    public PcFtktPrice getPcFtktPrice(String price_cd, Integer pcVrsn, String class_id) {
+        final String pc_limit = "SELECT * FROM `pc_ftkt_price` where price_cd=:price_cd, pc_vrsn=:pc_vrsn, " +
+                "class_id=:class_id";
+        PcFtktPrice pcFtktPrice = new PcFtktPrice();
+        SqlParameterSource namedParameters = new MapSqlParameterSource()
+                .addValue("price_cd", price_cd)
+                .addValue("pc_vrsn", pcVrsn)
+                .addValue("class_id", class_id);
+        List<Map> rows = jdbcTemplate.queryForList(pc_limit, namedParameters, Map.class);
+        for (Map<String, Object> row : rows) {
+            pcFtktPrice.setFtktPriceEur((Double) row.get("FTKT_PRICE_EUR"));
+            pcFtktPrice.setFtktPrice((Integer) row.get("FTKT_PRICE"));
+        }
+        return pcFtktPrice;
     }
 }

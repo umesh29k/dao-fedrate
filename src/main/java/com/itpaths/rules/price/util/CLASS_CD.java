@@ -7,10 +7,10 @@ public enum CLASS_CD {
     RTP_T_CL_BOTH(03, "RTP_T_CL_BOTH"),
     RTP_T_CL_IRRELEVANT(04, "RTP_T_CL_IRRELEVANT"),
     RTP_T_CL_UPGRADE(05, "RTP_T_CL_UPGRADE");
-    private int key;
+    private Integer key;
     private String value;
 
-    CLASS_CD(int key, String value) {
+    CLASS_CD(Integer key, String value) {
         this.key = key;
         this.value = value;
     }
