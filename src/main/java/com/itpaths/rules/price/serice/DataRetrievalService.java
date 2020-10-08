@@ -66,6 +66,7 @@ public class DataRetrievalService {
             tktPrmtr.setTpNormMinPriceClass1Eur((Double) row.get("TP_NORM_MIN_PRICE_CLASS_1_EUR"));
             tktPrmtr.setTpNormCffcntClass2((Double) row.get("TP_NORM_CFFCNT_CLASS_2"));
             tktPrmtr.setTpNormMinPriceClass2Eur((Double) row.get("TP_NORM_MIN_PRICE_CLASS_2_EUR"));
+            tktPrmtr.setTpNormFxdChargeEur((Double) row.get("TP_NORM_MIN_PRICE_CLASS_2_EUR"));
         }
         return tktPrmtr;
     }
@@ -95,5 +96,17 @@ public class DataRetrievalService {
             pcVoygrClass.setPcMaxAmtEur((Integer) row.get("pc_max_amt_eur"));
         }
         return pcVoygrClass;
+    }
+
+    public CityNetSupplmnt getcity_net_supplmnt(){
+        return null;
+    }
+
+    public Orgnsm getorgnsm(){
+        return null;
+    }
+
+    public Calndr getcalndr(){
+        return null;
     }
 }

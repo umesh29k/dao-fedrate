@@ -162,7 +162,7 @@ public class PriceService {
 
     public void doClassic(PriceCode priceCode, PriceRequest priceRequest) {
         get_distances();
-        get_params();
+        get_params(priceCode, priceRequest);
 
         if (priceCode.getPriceFrmlId().isEmpty())
             priceCode.setPriceFrmlId("RT_CLASSIC");
@@ -287,7 +287,26 @@ public class PriceService {
         return pcVoygrClass;
     }
 
-    private void get_params() {
+    private void get_params(PriceCode priceCode, PriceRequest priceRequest) {
+        TktPrmtr tktPrmtr = datRetService.getTicketParams();
+
+        params[1] = tktPrmtr.getTpNormFxdChargeEur();
+        params[2] = sdf_cal_tkt_dstnc(); //return taxable_distance
+        params[5] = tktPrmtr.getTpNormUnitPriceEur();
+        params[7] = tktPrmtr.getTpNrdctnFxdChargeEur();
+
+        if(priceRequest.getClass_id() == "" || priceRequest.getClass_id() == ""){
+
+        }
+        double via_kav = sdf_cal_tkt_dstnc(); //returns via_kav
+        params[14] = via_kav;
+
+        priceRequest.getMtrip_flag();
+        CityNetSupplmnt cityNetSupplmnt = datRetService.getcity_net_supplmnt();
+
+        Orgnsm orgnsm = datRetService.getorgnsm();
+        Calndr calndr = datRetService.getcalndr();
+
         /**
          * Set all parameters to 0
          * Set parameter 1 of parameter array = tp_norm_fxd_charge_eur of tkt_prmtr
@@ -359,6 +378,10 @@ public class PriceService {
          * Set parameter 35 of parameter array = class_id
          * Set parameter 36 of parameter array = diabolo_amt_single
          */
+    }
+
+    private double sdf_cal_tkt_dstnc() {
+        return 0;
     }
 
     private void get_distances() {
