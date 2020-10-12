@@ -36,8 +36,8 @@ public class Rules {
     String priceCodeUrl = baseUrl + "price_code.xls";
 
     public Rules() {
-        formulaContainer = loadFormulaContainer(formulaUrl);
-        priceCodeContainer = loadPriceCodeContainer(formulaUrl);
+        //formulaContainer = loadFormulaContainer(formulaUrl);
+        priceCodeContainer = loadPriceCodeContainer(priceCodeUrl);
     }
 
     private KieContainer loadPriceCodeContainer(String url) {

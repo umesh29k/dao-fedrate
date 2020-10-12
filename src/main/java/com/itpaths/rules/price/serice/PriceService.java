@@ -1,6 +1,7 @@
 package com.itpaths.rules.price.serice;
 
 import com.itpaths.rules.price.api.Rules;
+import com.itpaths.rules.price.model.dao;
 import com.itpaths.rules.price.model.dto.*;
 import com.itpaths.rules.price.exception.ApiException;
 import com.itpaths.rules.price.model.PriceRequest;
@@ -79,10 +80,10 @@ public class PriceService {
         voygr_id.put("6", "RTP_T_VY_ADTNL_ADULT");
     }
 
-    private PriceCode priceCode;
-    private PcVoygr pcVoygr;
-    private TktPrmtr tktPrmtr;
-    private PcVoygrClass pcVoygrClass;
+    private dao.PriceCode priceCode;
+    private dao.PcVoygr pcVoygr;
+    private dao.TktPrmtr tktPrmtr;
+    private dao.PcVoygrClass pcVoygrClass;
 
     public PriceResult calculate(PriceRequest priceRequest) {
         /**
@@ -93,8 +94,8 @@ public class PriceService {
         if (priceRequest.getPrice_cd() != null)
             if (!priceRequest.getPrice_cd().isEmpty()) {
                 //get data from price_code for the given id
-                List<PriceCode> priceCodes = datRetService.getPriceData(priceRequest.getPrice_cd());
-                for (PriceCode pc : priceCodes) {
+                List<dao.PriceCode> priceCodes = datRetService.getPriceData(priceRequest.getPrice_cd());
+                for (dao.PriceCode pc : priceCodes) {
                     priceCode = pc;
                     formula.setPrice_natr_id(priceCode.getPriceNatrId());
                     formula.setTkt_type_id(tktTypeID.get(priceCode.getTktTypeId()));
@@ -219,7 +220,7 @@ public class PriceService {
                 params[20] = Double.parseDouble("99999");
                 if (price_cd.get(priceCode.getPriceNatrId()).equalsIgnoreCase("RTP_T_PN_MTARIFF_MAX")) {
                     try {
-                        PcVoygrClass pcVoygrClass = get_pc_voygr_class(priceRequest.getVoygr_id(),
+                        dao.PcVoygrClass pcVoygrClass = get_pc_voygr_class(priceRequest.getVoygr_id(),
                                 priceCode.getPriceCd(), 4,
                                 priceCode.getPcVrsn());
                         params[20] = Double.valueOf(pcVoygrClass.getPcMaxAmtEur() + diabolo_amt_single);
@@ -240,7 +241,7 @@ public class PriceService {
                                 }
                             }
                             try {
-                                PcVoygrClass pcVoygrClass = get_pc_voygr_class(voygrId, priceCode.getPriceCd(), 4,
+                                dao.PcVoygrClass pcVoygrClass = get_pc_voygr_class(voygrId, priceCode.getPriceCd(), 4,
                                         priceCode.getPcVrsn());
                                 params[20] = Double.valueOf(pcVoygrClass.getPcMaxAmtEur() + diabolo_amt_single);
                             } catch (ApiException e) {
@@ -271,7 +272,7 @@ public class PriceService {
                     || priceCode.getPriceNatrId().equalsIgnoreCase("RTP_T_PN_MTARIFF_MAX")) {
                 classId = CLASS_CD.RTP_T_CL_FIRST.getKey();
                 try {
-                    PcVoygrClass pcVoygrClass = get_pc_voygr_class(priceRequest.getVoygr_id(),
+                    dao.PcVoygrClass pcVoygrClass = get_pc_voygr_class(priceRequest.getVoygr_id(),
                             priceRequest.getPrice_cd(), 4,
                             priceCode.getPcVrsn());
                     params[20] = pcVoygrClass.getPcMaxAmtEur() + diabolo_amt_single;
@@ -296,7 +297,7 @@ public class PriceService {
                     || priceCode.getPriceNatrId().equalsIgnoreCase("RTP_T_PN_MTARIFF_MAX")) {
                 classId = CLASS_CD.RTP_T_CL_SECOND.getKey();
                 try {
-                    PcVoygrClass pcVoygrClass = get_pc_voygr_class(priceRequest.getVoygr_id(),
+                    dao.PcVoygrClass pcVoygrClass = get_pc_voygr_class(priceRequest.getVoygr_id(),
                             priceRequest.getPrice_cd(), 4,
                             priceCode.getPcVrsn());
                     params[20] = pcVoygrClass.getPcMaxAmtEur() + diabolo_amt_single;
@@ -321,7 +322,7 @@ public class PriceService {
                 priceRequest.setClass_id(Integer.toString(CLASS_CD.RTP_T_CL_SECOND.getKey()));
                 classId = Double.parseDouble(priceRequest.getClass_id());
                 try {
-                    PcVoygrClass pcVoygrClass = get_pc_voygr_class(priceRequest.getVoygr_id(),
+                    dao.PcVoygrClass pcVoygrClass = get_pc_voygr_class(priceRequest.getVoygr_id(),
                             priceRequest.getPrice_cd(), 4,
                             priceCode.getPcVrsn());
                     params[20] = pcVoygrClass.getPcMaxAmtEur() + diabolo_amt_single;
@@ -348,8 +349,8 @@ public class PriceService {
         return 0;
     }
 
-    private PcVoygrClass get_pc_voygr_class(String voygr_id, String priceCd, int i, Integer pcVrsn) throws ApiException {
-        PcVoygrClass pcVoygrClass = datRetService.getPcVoygerClass(voygr_id, priceCd, i, pcVrsn);
+    private dao.PcVoygrClass get_pc_voygr_class(String voygr_id, String priceCd, int i, Integer pcVrsn) throws ApiException {
+        dao.PcVoygrClass pcVoygrClass = datRetService.getPcVoygerClass(voygr_id, priceCd, i, pcVrsn);
         if (pcVoygrClass.getClassId() == null || pcVoygrClass.getPcMaxAmtEur() == null)
             throw new ApiException("SAS_VOYGR_CLASS_INV");
         return pcVoygrClass;
@@ -397,7 +398,7 @@ public class PriceService {
                 params[18] = tktPrmtr.getTpNormCffcntBothWays();
             }
         }
-        CityNetSupplmnt cityNetSupplmnt = datRetService.getCity_net_supplmnt();
+        dao.CityNetSupplmnt cityNetSupplmnt = datRetService.getCity_net_supplmnt();
         if (priceRequest.getCity_net_flag().equalsIgnoreCase("Y")) {
             params[1] = cityNetSupplmnt.getCndStktFxdChargeSEur();
         }
@@ -410,12 +411,12 @@ public class PriceService {
             params[22] = (double) priceCode.getPcUplftCffcnt();
         params[23] = (double) pcVoygr.getPcUplftAmtEur();
         if (!priceRequest.getOrgnsm_id().isEmpty()) {
-            Orgnsm orgnsm = datRetService.getOrgnsm();
+            dao.Orgnsm orgnsm = datRetService.getOrgnsm();
             if (orgnsm != null)
                 params[24] = (double) orgnsm.getPcRdctnCffcnt();
         }
         params[27] = qty;
-        Calndr calndr = datRetService.getCalndr();
+        dao.Calndr calndr = datRetService.getCalndr();
         params[28] = Double.parseDouble(calndr.getCalndrDayInWk());
         if (calndr.getCalndrHoliday().equalsIgnoreCase("Y"))
             params[29] = 1.0;
@@ -452,7 +453,7 @@ public class PriceService {
     private void do_zone(PriceRequest priceRequest) throws ApiException {
         double distance = get_distances(priceRequest);
         //Does this sub-routine get_distance need params??
-        PcLimit pcLimit = datRetService.getPcLimit(priceRequest.getPrice_cd(), priceCode.getPcVrsn(),
+        dao.PcLimit pcLimit = datRetService.getPcLimit(priceRequest.getPrice_cd(), priceCode.getPcVrsn(),
                 priceRequest.getVoygr_id(),
                 distance,
                 qty
@@ -561,7 +562,7 @@ public class PriceService {
         }
         get_params(priceRequest);
         params[2] = 0d;
-        PcFtktPrice pcFtktPrice = datRetService.getPcFtktPrice(priceRequest.getPrice_cd(), priceCode.getPcVrsn(),
+        dao.PcFtktPrice pcFtktPrice = datRetService.getPcFtktPrice(priceRequest.getPrice_cd(), priceCode.getPcVrsn(),
                 priceRequest.getClass_id());
         if (tktTypeID.get(priceRequest.getTkt_type_id()).equalsIgnoreCase("RTP_T_TT_FIXED")
                 || tktTypeID.get(priceRequest.getTkt_type_id()).equalsIgnoreCase("RTP_T_TT_AGLOCARD")) {
@@ -573,7 +574,7 @@ public class PriceService {
             } catch (ApiException e) {
                 e.printStackTrace();
             }
-            PcVoygrClass pcVoygrClass = datRetService.getPcVoygerClass(priceRequest.getVoygr_id(), priceRequest.getPrice_cd(),
+            dao.PcVoygrClass pcVoygrClass = datRetService.getPcVoygerClass(priceRequest.getVoygr_id(), priceRequest.getPrice_cd(),
                     Integer.parseInt(priceRequest.getClass_id()), priceCode.getPcVrsn());
             params[20] = pcVoygrClass.getPcDfltAmtEur() + diabolo_amt_single;
         }
@@ -614,7 +615,7 @@ public class PriceService {
     public void do_classic_max(PriceRequest priceRequest) {
         classId = Double.parseDouble(priceRequest.getClass_id());
         try {
-            PcVoygrClass pcVoygrClass = get_pc_voygr_class(priceRequest.getVoygr_id(),
+            dao.PcVoygrClass pcVoygrClass = get_pc_voygr_class(priceRequest.getVoygr_id(),
                     priceCode.getPriceCd(), 4,
                     priceCode.getPcVrsn());
             params[20]= pcVoygrClass.getPcMaxAmtEur()+diabolo_amt_single;
