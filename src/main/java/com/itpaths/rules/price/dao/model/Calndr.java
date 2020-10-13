@@ -2,9 +2,7 @@ package com.itpaths.rules.price.dao.model;
 
 import lombok.Data;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.io.Serializable;
 import java.sql.Date;
 
@@ -15,7 +13,12 @@ public class Calndr implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    @Column(name = "CALNDR_DATE")
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false)
+    private Integer id;
+
+    @Column(name = "CALNDR_DATE", nullable = false)
     private Date calndrDate;
 
     @Column(name = "STS_CD")
