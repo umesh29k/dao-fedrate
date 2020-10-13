@@ -4,6 +4,8 @@ import com.itpaths.rules.price.dao.model.PriceCode;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
-public interface PriceCodeRepository extends JpaRepository<PriceCode, Integer>, JpaSpecificationExecutor<PriceCode> {
+import java.util.List;
 
+public interface PriceCodeRepository extends JpaRepository<PriceCode, Integer>, JpaSpecificationExecutor<PriceCode> {
+    public List<PriceCode> findByPriceCd(String priceCd);
 }
