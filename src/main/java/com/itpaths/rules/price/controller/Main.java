@@ -1,5 +1,6 @@
 package com.itpaths.rules.price.controller;
 
+import com.itpaths.rules.price.exception.ApiException;
 import com.itpaths.rules.price.model.PriceResult;
 import com.itpaths.rules.price.model.PriceRequest;
 import com.itpaths.rules.price.serice.PriceService;
@@ -9,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @RestController
 @ApiOperation(value = "Price Data",
@@ -23,8 +26,13 @@ public class Main {
             example = "Get Price Details",
             required = true)
     @PostMapping("/get/priceDetails")
-    public PriceResult calculatePayment(@RequestBody PriceRequest priceRequest) {
-        PriceResult priceResult = priceService.calculate(priceRequest);
+    public List<PriceResult> calculatePayment(@RequestBody PriceRequest priceRequest) {
+        List<PriceResult> priceResult = null;
+        try {
+            priceResult = priceService.calculate(priceRequest);
+        } catch (ApiException e) {
+            e.printStackTrace();
+        }
         return priceResult;
     }
 }

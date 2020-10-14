@@ -1,4 +1,4 @@
-package com.itpaths.rules.price.util;
+package com.itpaths.rules.price.util.econst;
 
 public enum PRICE_CD {
     RTP_T_PN_CLASSIC("RTP_T_PN_CLASSIC", 01),

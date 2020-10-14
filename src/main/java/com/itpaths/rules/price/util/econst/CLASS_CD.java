@@ -1,4 +1,4 @@
-package com.itpaths.rules.price.util;
+package com.itpaths.rules.price.util.econst.enum;
 
 
 public enum CLASS_CD {

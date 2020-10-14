@@ -8,4 +8,5 @@ import java.util.List;
 
 public interface PriceCodeRepository extends JpaRepository<PriceCode, Integer>, JpaSpecificationExecutor<PriceCode> {
     public List<PriceCode> findByPriceCd(String priceCd);
+    public List<PriceCode> findByTktTypeId(String tktTypeId);
 }
