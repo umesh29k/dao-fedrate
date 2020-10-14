@@ -14,7 +14,10 @@ public class TktType implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    //@GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(generator = "tkt_type_seq")
+    @SequenceGenerator(name = "tkt_type_seq", sequenceName = "TKT_TYPE_SEQ", allocationSize
+            = 1)
     @Column(name = "id", nullable = false)
     private Integer id;
 

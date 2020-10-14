@@ -14,7 +14,9 @@ public class Calndr implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    //@GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(generator = "calndr_seq")
+    @SequenceGenerator(name = "calndr_seq", sequenceName = "CALNDR_SEQ", allocationSize = 1)
     @Column(name = "id", nullable = false)
     private Integer id;
 

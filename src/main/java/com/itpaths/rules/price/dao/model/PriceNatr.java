@@ -14,7 +14,10 @@ public class PriceNatr implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    //@GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(generator = "price_natr_seq")
+    @SequenceGenerator(name = "price_natr_seq", sequenceName = "PRICE_NATR_SEQ", allocationSize
+            = 1)
     @Column(name = "id", nullable = false)
     private Integer id;
 

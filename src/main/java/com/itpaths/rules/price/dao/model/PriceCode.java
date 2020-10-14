@@ -14,7 +14,10 @@ public class PriceCode implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    //@GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(generator = "price_code_seq")
+    @SequenceGenerator(name = "price_code_seq", sequenceName = "PRICE_CODE_SEQ", allocationSize
+            = 1)
     @Column(name = "id", nullable = false)
     private Integer id;
 

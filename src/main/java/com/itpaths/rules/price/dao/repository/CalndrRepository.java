@@ -4,6 +4,8 @@ import com.itpaths.rules.price.dao.model.Calndr;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
+import javax.transaction.Transactional;
+
 public interface CalndrRepository extends JpaRepository<Calndr, Integer>, JpaSpecificationExecutor<Calndr> {
     public Calndr findByCalndrDate(String calndrDate);
 }

@@ -14,7 +14,10 @@ public class CrrgClass implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    //@GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(generator = "crr_class_seq")
+    @SequenceGenerator(name = "crr_class_seq", sequenceName = "CRR_CLASS_SEQ", allocationSize
+            = 1)
     @Column(name = "id", nullable = false)
     private Integer id;
 

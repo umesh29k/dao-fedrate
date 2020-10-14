@@ -14,7 +14,10 @@ public class TktPrmtr implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    //@GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(generator = "tkt_prmtr_seq")
+    @SequenceGenerator(name = "tkt_prmtr_seq", sequenceName = "TKT_PRMTR_SEQ", allocationSize
+            = 1)
     @Column(name = "id", nullable = false)
     private Integer id;
 

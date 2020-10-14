@@ -29,7 +29,7 @@ public class PriceService {
     @Autowired
     private PriceCodeRepository priceCodeRepo;
     @Autowired
-            private TtFormulaRepository ttFormulaRepo;
+    private TtFormulaRepository ttFormulaRepo;
 
     Map<Integer, String> class_id = new HashMap();
     Map<Integer, String> price_cd = new HashMap<>();
@@ -38,12 +38,23 @@ public class PriceService {
 
     private Double tkt_price_eur = 0d;
     private Double[] params = new Double[37];
+    private Double[] E1 = new Double[2];
+    private Double[] DS = new Double[2];
     private Double trf_pp_price_eur = 0.0;
     private String frml_id = null;
     private PriceCode priceCode;
     private TktPrmtr tktPrmtr;
 
     public PriceService() {
+        for (int i = 0; i < params.length; i++) {
+            params[i] = 0d;
+        }
+        for (int i = 0; i < E1.length; i++) {
+            E1[i] = 0d;
+        }
+        for (int i = 0; i < DS.length; i++) {
+            DS[i] = 0d;
+        }
         class_id.put(1, "RTP_T_CL_FIRST");
         class_id.put(2, "RTP_T_CL_SECOND");
         class_id.put(3, "RTP_T_CL_BOTH");
@@ -127,13 +138,15 @@ public class PriceService {
                         priceResult.setStatus("SAS_PRICE_ERR");
 
                     //******* DROOLS : Start Rule 14 "set trf_pp_frml_id if orgnsm_id is filled "*************
-                    if (priceCode.getTrfPpFrmlId().isEmpty() && !priceRequest.getOrgnsm_id().isEmpty()) {
+                    if (priceCode.getTrfPpFrmlId() == null && !priceRequest.getOrgnsm_id().isEmpty())
+                        priceCode.setTrfPpFrmlId("RT_CLASSIC_DEBET");
+                    else if (priceCode.getTrfPpFrmlId().isEmpty() && !priceRequest.getOrgnsm_id().isEmpty()) {
                         priceCode.setTrfPpFrmlId("RT_CLASSIC_DEBET");
                     }
                     //******* DROOLS : end Rule 14 "price_natr_id unknown"*************
                     if (!priceCode.getTrfPpFrmlId().isEmpty()) {
                         List<TtFormula> ttFormula = ttFormulaRepo.findByFrmlId(priceCode.getTrfPpFrmlId());
-                        if(ttFormula.size() == 0)
+                        if (ttFormula.size() == 0)
                             priceResult.setStatus(priceResult.getStatus() + "; " + "SAS_DBF_TT_FORMULA");
                         else
                             frml_id = ttFormula.get(0).getFrmlId();
@@ -141,60 +154,61 @@ public class PriceService {
 
                     if (priceRequest.getClass_id() != null) {
                         if (!priceRequest.getClass_id().isEmpty()) {
-                            if (class_id.get(Integer.parseInt(priceRequest.getClass_id()))
-                                    .equalsIgnoreCase("RTP_T_CL_UPGRADE")) {
-                                //calculate price 1st class
-                                tktPrmtr = dataRetrievalService.getTicketParams();
+                            if (class_id.get(Integer.parseInt(priceRequest.getClass_id())) != null)
+                                if (class_id.get(Integer.parseInt(priceRequest.getClass_id()))
+                                        .equalsIgnoreCase("RTP_T_CL_UPGRADE")) {
+                                    //calculate price 1st class
+                                    tktPrmtr = dataRetrievalService.getTicketParams();
 
-                                //Invoke Formula
-                                double res1st = 0;
-                                params[11] = tktPrmtr.getTpNormCffcntClass1();
-                                params[13] = tktPrmtr.getTpNormMinPriceClass1Eur();
-                                params[15] = 0.0;
-                                //example RT_CLASSIC
-                                //What is the formula, need to be invoked?
-                                //if error, then throw SAS_TT_FORMULA_ERROR
-                                try {
-                                    res1st = invokeForumla(frml_id);
-                                } catch (InvocationTargetException e) {
-                                    priceCode.setTrfPpFrmlId("SAS_DBF_TT_FORMULA");
-                                }
+                                    //Invoke Formula
+                                    double res1st = 0;
+                                    params[11] = tktPrmtr.getTpNormCffcntClass1();
+                                    params[13] = tktPrmtr.getTpNormMinPriceClass1Eur();
+                                    params[15] = 0.0;
+                                    //example RT_CLASSIC
+                                    //What is the formula, need to be invoked?
+                                    //if error, then throw SAS_TT_FORMULA_ERROR
+                                    try {
+                                        res1st = invokeForumla(frml_id, E1, DS, params);
+                                    } catch (InvocationTargetException e) {
+                                        priceCode.setTrfPpFrmlId("SAS_DBF_TT_FORMULA");
+                                    }
 
-                                //calculate price 2nd class
-                                double res2nd = 0;
-                                params[11] = tktPrmtr.getTpNormCffcntClass2();
-                                params[13] = tktPrmtr.getTpNormMinPriceClass2Eur();
-                                //Invoke Formula
-                                //What is the formula, need to be invoked?
-                                //if error, then throw SAS_TT_FORMULA_ERROR
-                                //ex invoke RT_CLASSIC
-                                try {
-                                    res2nd = invokeForumla(frml_id);
-                                } catch (InvocationTargetException e) {
-                                    priceCode.setTrfPpFrmlId("SAS_DBF_TT_FORMULA");
-                                }
+                                    //calculate price 2nd class
+                                    double res2nd = 0;
+                                    params[11] = tktPrmtr.getTpNormCffcntClass2();
+                                    params[13] = tktPrmtr.getTpNormMinPriceClass2Eur();
+                                    //Invoke Formula
+                                    //What is the formula, need to be invoked?
+                                    //if error, then throw SAS_TT_FORMULA_ERROR
+                                    //ex invoke RT_CLASSIC
+                                    try {
+                                        res2nd = invokeForumla(frml_id, E1, DS, params);
+                                    } catch (InvocationTargetException e) {
+                                        priceCode.setTrfPpFrmlId("SAS_DBF_TT_FORMULA");
+                                    }
 
-                                //calculate price upgrade
-                                params[25] = res1st;
-                                params[26] = res2nd;
-                                //ex RT_CLASSIC_UPGRADE
-                                try {
-                                    trf_pp_price_eur = invokeForumla(frml_id + "_UPGRADE");
-                                    priceResult.setTotal_pp_price_eur(trf_pp_price_eur.toString());
-                                } catch (InvocationTargetException e) {
-                                    priceCode.setTrfPpFrmlId("SAS_DBF_TT_FORMULA");
+                                    //calculate price upgrade
+                                    params[25] = res1st;
+                                    params[26] = res2nd;
+                                    //ex RT_CLASSIC_UPGRADE
+                                    try {
+                                        trf_pp_price_eur = invokeForumla(frml_id + "_UPGRADE", E1, DS, params);
+                                        priceResult.setTotal_pp_price_eur(trf_pp_price_eur.toString());
+                                    } catch (InvocationTargetException e) {
+                                        priceCode.setTrfPpFrmlId("SAS_DBF_TT_FORMULA");
+                                    }
+                                    //if error, then throw SAS_TT_FORMULA_ERROR
+                                } else {
+                                    try {
+                                        trf_pp_price_eur = invokeForumla(frml_id, E1, DS, params);
+                                        priceResult.setTotal_pp_price_eur(trf_pp_price_eur.toString());
+                                    } catch (InvocationTargetException e) {
+                                        priceCode.setTrfPpFrmlId("SAS_TT_FORMULA_ERROR");
+                                    }
+                                    //What is the formula, need to be invoked?
+                                    //if error, then throw SAS_TT_FORMULA_ERROR
                                 }
-                                //if error, then throw SAS_TT_FORMULA_ERROR
-                            } else {
-                                try {
-                                    trf_pp_price_eur = invokeForumla(frml_id);
-                                    priceResult.setTotal_pp_price_eur(trf_pp_price_eur.toString());
-                                } catch (InvocationTargetException e) {
-                                    priceCode.setTrfPpFrmlId("SAS_TT_FORMULA_ERROR");
-                                }
-                                //What is the formula, need to be invoked?
-                                //if error, then throw SAS_TT_FORMULA_ERROR
-                            }
                         }
                     }
                     /**

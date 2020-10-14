@@ -14,7 +14,10 @@ public class CityNetSupplmnt implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    //@GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(generator = "city_net_supplmnt_seq")
+    @SequenceGenerator(name = "city_net_supplmnt_seq", sequenceName = "CITY_NET_SUPPLMNT_SEQ", allocationSize
+            = 1)
     @Column(name = "id", nullable = false)
     private Integer id;
 

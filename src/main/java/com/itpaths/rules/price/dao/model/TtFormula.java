@@ -14,7 +14,10 @@ public class TtFormula implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    //@GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(generator = "tt_formula_seq")
+    @SequenceGenerator(name = "tt_formula_seq", sequenceName = "TT_FORMULA_SEQ", allocationSize
+            = 1)
     @Column(name = "id", nullable = false)
     private Integer id;
 

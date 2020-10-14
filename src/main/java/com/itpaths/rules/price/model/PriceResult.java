@@ -5,7 +5,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 @Data
-@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonInclude(JsonInclude.Include.ALWAYS)
 public class PriceResult {
     @ApiModelProperty(notes = "total price", example = "0.0 EUR")
     private String total_price_eur;
