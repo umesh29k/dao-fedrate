@@ -16,7 +16,7 @@ public class FormulaUtil {
         this.DS = DS;
     }
 
-    private double roundOff(double num, int place) {
+    public double roundOff(double num, int place) {
         DecimalFormat df = null;
         if (place == 2)
             df = new DecimalFormat("#.##");
@@ -52,45 +52,56 @@ public class FormulaUtil {
         return max(max((RT_NORMAL_PRICE()), (RT_VIA_PRICE())), (RT_ALTRNV_PRICE()));
     }
 
-    private double RT_ALTRNV_PRICE() {
+    public double RT_ALTRNV_PRICE() {
         return 0;
     }
 
-    private double RT_VIA_PRICE() {
-        return (min(min(RNDFRM(E1[(int) max((((roundOff(param[1], 4)
-                + (min(RNDFRM(DS[param[31].intValue()]), 150) * roundOff(param[5], 4)))
-                * (1 - param[6]) + (roundOff(param[7], 4) * param[8] + param[9]
-                * roundOff(param[5], 4)) * param[6] + param[10])
-                * ((RT_1STCLASS_DSTNC())) * param[12]), (param[13] * param[8]))]),
-                ((11.4 + abs((5.9 * (1 - ((RT_1STCLASS_DSTNC())))
-                / 0.54))) * ((abs(param[6] - 0.5) * 100000) + 1))), param[20])
-                + min(min(RNDFRM(E1[(int) max((((roundOff(param[1], 4)
-                + (min(RNDFRM(DS[param[32].intValue()]), 150) * roundOff(param[5], 4)))
-                * (1 - param[6]) + (roundOff(param[7], 4) * param[8] + param[9]
-                * roundOff(param[5], 4)) * param[6] + param[10]) * ((RT_1STCLASS_DSTNC()))
-                * param[12]), (param[13] * param[8]))]), ((11.4 + abs((5.9
-                * (1 - ((RT_1STCLASS_DSTNC()))) / 0.54)))
-                * ((abs(param[6] - 0.5) * 100000) + 1))), param[20])) * min(param[32], 1);
+    public double RT_VIA_PRICE() {
+        try {
+            return (min(min(RNDFRM(E1[(int) max((((roundOff(param[1], 4)
+                            + (min(RNDFRM(DS[param[31].intValue()]), 150) * roundOff(param[5], 4)))
+                            * (1 - param[6]) + (roundOff(param[7], 4) * param[8] + param[9]
+                            * roundOff(param[5], 4)) * param[6] + param[10])
+                            * ((RT_1STCLASS_DSTNC())) * param[12]), (param[13] * param[8]))]),
+                    ((11.4 + abs((5.9 * (1 - ((RT_1STCLASS_DSTNC())))
+                            / 0.54))) * ((abs(param[6] - 0.5) * 100000) + 1))), param[20])
+                    + min(min(RNDFRM(E1[(int) max((((roundOff(param[1], 4)
+                    + (min(RNDFRM(DS[param[32].intValue()]), 150) * roundOff(param[5], 4)))
+                    * (1 - param[6]) + (roundOff(param[7], 4) * param[8] + param[9]
+                    * roundOff(param[5], 4)) * param[6] + param[10]) * ((RT_1STCLASS_DSTNC()))
+                    * param[12]), (param[13] * param[8]))]), ((11.4 + abs((5.9
+                    * (1 - ((RT_1STCLASS_DSTNC()))) / 0.54)))
+                    * ((abs(param[6] - 0.5) * 100000) + 1))), param[20])) * min(param[32], 1);
+        }
+        catch(ArrayIndexOutOfBoundsException e){
+            e.printStackTrace();
+            return 0;
+        }
     }
 
-    private int RT_NORMAL_PRICE() {
-        return (int) ((RNDFRM(E1[(int) max((((roundOff(param[1], 4)
-                        + ((min(RNDFRM(DS[param[30].intValue()]), 150)) * roundOff(param[5], 4)))
-                        * (1 - param[6]) + (roundOff(param[7], 4) * param[8] + param[9]
-                        * roundOff(param[5], 4)) * param[6] + param[10])
-                        * ((RT_1STCLASS_DSTNC())) * param[12]), (param[13] * param[8]))])
-                        * (RT_TRIPS())) * (1 - min(param[32], 1)) * (1 - min(param[33], 1)));
+    public Integer RT_NORMAL_PRICE() {
+        try {
+            return (int) ((RNDFRM(E1[(int) max((((roundOff(param[1], 4)
+                    + ((min(RNDFRM(DS[param[30].intValue()]), 150)) * roundOff(param[5], 4)))
+                    * (1 - param[6]) + (roundOff(param[7], 4) * param[8] + param[9]
+                    * roundOff(param[5], 4)) * param[6] + param[10])
+                    * ((RT_1STCLASS_DSTNC())) * param[12]), (param[13] * param[8]))])
+                    * (RT_TRIPS())) * (1 - min(param[32], 1)) * (1 - min(param[33], 1)));
+        } catch (ArrayIndexOutOfBoundsException e) {
+            e.printStackTrace();
+            return 0;
+        }
     }
 
-    private int RNDFRM(double d) {
-        return (int)d;
+    public int RNDFRM(double d) {
+        return (int) d;
     }
 
-    private double RT_TRIPS() {
+    public double RT_TRIPS() {
         return param[17] * RT_ITNRY();
     }
 
-    private double RT_1STCLASS_DSTNC() {
+    public double RT_1STCLASS_DSTNC() {
         return max(param[11]
                 - (0.10 * min(max((37 - param[30]), 0), 1))
                 - (0.14 * min(max((52 - param[30]), 0), 1)), 1);

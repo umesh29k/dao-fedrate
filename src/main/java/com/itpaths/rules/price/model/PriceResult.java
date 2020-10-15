@@ -8,24 +8,24 @@ import lombok.Data;
 @JsonInclude(JsonInclude.Include.ALWAYS)
 public class PriceResult {
     @ApiModelProperty(notes = "total price", example = "0.0 EUR")
-    private String total_price_eur;
+    private Double total_price_eur;
     @ApiModelProperty(notes = "total PP price", example = "0.0 EUR")
-    private String total_pp_price_eur;
+    private Double total_pp_price_eur;
     @ApiModelProperty(notes = "MOBIB price", example = "0.0 EUR")
-    private String mobib_price_eur;
+    private Double mobib_price_eur;
     @ApiModelProperty(notes = "Tarrif Code", example = "ADCD")
     private String mobib_tarif_code;
     @ApiModelProperty(notes = "DIABOLO amount", example = "0.0 EUR")
-    private String diabolo_amt_eur;
+    private Double diabolo_amt_eur;
     @ApiModelProperty(notes = "Status", example = "SAS_PRICE_ERR")
     private String status;
 
     public PriceResult() {
-        this.total_price_eur = "0";
-        this.total_pp_price_eur = "0";
-        this.mobib_price_eur = "0";
+        this.total_price_eur = 0d;
+        this.total_pp_price_eur = 0d;
+        this.mobib_price_eur = 0d;
         this.mobib_tarif_code = "";
-        this.diabolo_amt_eur = "0";
+        this.diabolo_amt_eur = 0d;
         this.status = status;
     }
 
