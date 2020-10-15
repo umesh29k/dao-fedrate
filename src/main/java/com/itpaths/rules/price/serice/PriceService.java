@@ -195,7 +195,7 @@ public class PriceService {
             sumInstanceMethod = Price_Natr_Id.class.getMethod(formula.getMethod(), PriceRequest.class);
             Price_Natr_Id operationsInstance = new Price_Natr_Id(params, E1, DS, priceCode, formula);
             result
-                    = (Double) sumInstanceMethod.invoke(operationsInstance, priceRequest, formula);
+                    = (Double) sumInstanceMethod.invoke(operationsInstance, priceRequest);
         } catch (InvocationTargetException | IllegalAccessException | NoSuchMethodException e) {
             e.printStackTrace();
         }
