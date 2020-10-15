@@ -19,27 +19,16 @@ import java.util.Map;
 import static com.itpaths.rules.price.util.econst.Constants.*;
 
 public class Price_Natr_Id {
-    @Autowired
     private DataRetrievalService dataRetrievalService;
-    @Autowired
     private PriceCodeRepository priceCodeRepo;
-    @Autowired
     private TktPrmtrRepository tktPrmtrRepo;
-    @Autowired
     private PcVoygrRepository pcVoygrRepo;
-    @Autowired
     private PcVoygrClassRepository pcVoygrClassRepo;
-    @Autowired
     private CityNetSupplmntRepository cityNetSupplmntRepo;
-    @Autowired
     private OrgnsmRepository orgnsmRepo;
-    @Autowired
     private CalndrRepository calndrRepo;
-    @Autowired
     private PcLimitRepository pcLimitRepo;
-    @Autowired
     private PcFtktPriceRepository pcFtktPriceRepo;
-    @Autowired
     private TtFormulaRepository ttFormulaRepo;
 
     private Double qty;
@@ -60,6 +49,24 @@ public class Price_Natr_Id {
     private Double[] E1;
     private Double[] DS;
     private Double[] params;
+
+    public Price_Natr_Id(PriceCodeRepository priceCodeRepo, TktPrmtrRepository tktPrmtrRepo,
+                         PcVoygrRepository pcVoygrRepo, PcVoygrClassRepository pcVoygrClassRepo, CityNetSupplmntRepository cityNetSupplmntRepo, OrgnsmRepository orgnsmRepo, CalndrRepository calndrRepo, PcLimitRepository pcLimitRepo, PcFtktPriceRepository pcFtktPriceRepo, TtFormulaRepository ttFormulaRepo,
+                         Double[] E1, Double[] DS, Double[] params) {
+        this.priceCodeRepo = priceCodeRepo;
+        this.tktPrmtrRepo = tktPrmtrRepo;
+        this.pcVoygrRepo = pcVoygrRepo;
+        this.pcVoygrClassRepo = pcVoygrClassRepo;
+        this.cityNetSupplmntRepo = cityNetSupplmntRepo;
+        this.orgnsmRepo = orgnsmRepo;
+        this.calndrRepo = calndrRepo;
+        this.pcLimitRepo = pcLimitRepo;
+        this.pcFtktPriceRepo = pcFtktPriceRepo;
+        this.ttFormulaRepo = ttFormulaRepo;
+        this.E1 = E1;
+        this.DS = DS;
+        this.params = params;
+    }
 
     public Price_Natr_Id(Double[] params, Double[] E1, Double[] DS, PriceCode priceCode, Formula formula) {
         this.params = params;
