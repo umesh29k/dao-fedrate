@@ -8,6 +8,7 @@ import com.itpaths.rules.price.exception.ApiException;
 import com.itpaths.rules.price.model.PriceRequest;
 import com.itpaths.rules.price.model.PriceResult;
 import com.itpaths.rules.price.util.Price_Natr_Id;
+import com.itpaths.rules.price.util.econst.Constants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -31,10 +32,6 @@ public class PriceService {
     @Autowired
     private TtFormulaRepository ttFormulaRepo;
 
-    Map<Integer, String> class_id = new HashMap();
-    Map<Integer, String> price_cd = new HashMap<>();
-    Map<String, String> tktTypeID = new HashMap<>();
-    Map<String, String> voygr_id = new HashMap<>();
 
     private Double tkt_price_eur = 0d;
     private Double[] params = new Double[37];
@@ -55,45 +52,6 @@ public class PriceService {
         for (int i = 0; i < DS.length; i++) {
             DS[i] = 0d;
         }
-        class_id.put(1, "RTP_T_CL_FIRST");
-        class_id.put(2, "RTP_T_CL_SECOND");
-        class_id.put(3, "RTP_T_CL_BOTH");
-        class_id.put(4, "RTP_T_CL_IRRELEVANT");
-        class_id.put(5, "RTP_T_CL_UPGRADE");
-
-        price_cd.put(1, "RTP_T_PN_CLASSIC");
-        price_cd.put(2, "RTP_T_PN_ZONE");
-        price_cd.put(3, "RTP_T_PN_FIXED");
-        price_cd.put(4, "RTP_T_PN_CLASSIC_PLUS");
-        price_cd.put(5, "RTP_T_PN_ZONE_PLUS");
-        price_cd.put(6, "RTP_T_PN_FIXED_PLUS");
-        price_cd.put(7, "RTP_T_PN_CLASSIC_MAX");
-        price_cd.put(8, "RTP_T_PN_GEOG");
-        price_cd.put(9, "RTP_T_PN_GEOG_PLUS");
-        price_cd.put(10, "RTP_T_PN_OTHER");
-        price_cd.put(11, "RTP_T_PN_MTARIFF");
-        price_cd.put(12, "RTP_T_PN_MTARIFF_PLUS");
-        price_cd.put(13, "RTP_T_PN_MTARIFF_MAX");
-
-        tktTypeID.put("0", "RTP_T_TT_SORRY_PASS"); //Sorry pass
-        tktTypeID.put("1", "RTP_T_TT_SIMPLE"); //Simple ticket
-        tktTypeID.put("2", "RTP_T_TT_COMBINED"); //Combined ticket
-        tktTypeID.put("3", "RTP_T_TT_AGLOCARD"); //Multiple trip within agglom.
-        tktTypeID.put("4", "RTP_T_TT_FIXED"); //Fixed price ticket
-        tktTypeID.put("5", "RTP_T_TT_FIXED_BP"); //Fixed price bonus pass
-        tktTypeID.put("6", "RTP_T_TT_WEEKEND"); //Weekend ticket
-        tktTypeID.put("7", "RTP_T_TT_MINER"); //Mine worker ticket
-        tktTypeID.put("8", "RTP_T_TT_CNTNGNT"); //Contingent event ticket
-        tktTypeID.put("9", "RTP_T_TT_CNTNGNT_COMBINED"); //Combined contingent event ticket
-        tktTypeID.put("A", "RTP_T_TT_FIXED_HPPNG"); //Happening fixed price ticket
-        tktTypeID.put("V", "RTP_T_TT_CNTNGNT_HOTSPOT"); //Hotspot card
-
-        voygr_id.put("1", "RTP_T_VY_ADULT");
-        voygr_id.put("2", "RTP_T_VY_CHILD");
-        voygr_id.put("3", "RTP_T_VY_BENE1");
-        voygr_id.put("4", "RTP_T_VY_BENE2");
-        voygr_id.put("5", "RTP_T_VY_BENE3");
-        voygr_id.put("6", "RTP_T_VY_ADTNL_ADULT");
     }
 
     public List<PriceResult> calculate(PriceRequest priceRequest) throws ApiException {
@@ -120,8 +78,8 @@ public class PriceService {
                 for (PriceCode pc : priceCodes) {
                     PriceResult priceResult = new PriceResult();
                     priceCode = pc;
-
-                    formula.setPrice_natr_id(priceCode.getPriceNatrId());
+                    int pNatrId = Integer.parseInt(priceCode.getPriceNatrId());
+                    formula.setPrice_natr_id(Constants.price_cd.get(pNatrId));
                     //Invoke Rules
                     formula = rules.getMethod(formula);
                     System.out.println("INFO:: Formula Invoked: " + formula.toString());
@@ -129,7 +87,7 @@ public class PriceService {
                     if (formula.getMethod() != null) {
                         if (!formula.getMethod().isEmpty()) {
                             //invoke methods retrieved from the METHOD decision table
-                            tkt_price_eur = getTkt_price_eur(priceRequest, formula, priceResult);
+                            tkt_price_eur = getTktPriceEur(priceRequest, formula, priceResult);
                             priceResult.setStatus(formula.getStatus());
                             priceResult.setTotal_price_eur(tkt_price_eur.toString());
                         } else if (formula.getStatus() == null)
@@ -154,8 +112,8 @@ public class PriceService {
 
                     if (priceRequest.getClass_id() != null) {
                         if (!priceRequest.getClass_id().isEmpty()) {
-                            if (class_id.get(Integer.parseInt(priceRequest.getClass_id())) != null)
-                                if (class_id.get(Integer.parseInt(priceRequest.getClass_id()))
+                            if (Constants.class_id.get(Integer.parseInt(priceRequest.getClass_id())) != null)
+                                if (Constants.class_id.get(Integer.parseInt(priceRequest.getClass_id()))
                                         .equalsIgnoreCase("RTP_T_CL_UPGRADE")) {
                                     //calculate price 1st class
                                     tktPrmtr = dataRetrievalService.getTicketParams();
@@ -230,12 +188,12 @@ public class PriceService {
     }
 
     //invoke methods retrieved from the METHOD decision table
-    private double getTkt_price_eur(PriceRequest priceRequest, Formula formula, PriceResult priceResult) {
+    private double getTktPriceEur(PriceRequest priceRequest, Formula formula, PriceResult priceResult) {
         double result = 0;
         Method sumInstanceMethod;
         try {
-            sumInstanceMethod = Price_Natr_Id.class.getMethod(formula.getMethod(), PriceRequest.class, Formula.class);
-            Price_Natr_Id operationsInstance = new Price_Natr_Id();
+            sumInstanceMethod = Price_Natr_Id.class.getMethod(formula.getMethod(), PriceRequest.class);
+            Price_Natr_Id operationsInstance = new Price_Natr_Id(params, E1, DS, priceCode, formula);
             result
                     = (Double) sumInstanceMethod.invoke(operationsInstance, priceRequest, formula);
         } catch (InvocationTargetException | IllegalAccessException | NoSuchMethodException e) {

@@ -4,6 +4,7 @@ import com.itpaths.rules.price.dao.model.*;
 import com.itpaths.rules.price.dao.repository.*;
 import com.itpaths.rules.price.exception.ApiException;
 import com.itpaths.rules.price.model.PriceRequest;
+import com.itpaths.rules.price.model.dto.Formula;
 import com.itpaths.rules.price.serice.DataRetrievalService;
 import com.itpaths.rules.price.util.econst.CLASS_CD;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static com.itpaths.rules.price.util.econst.Constants.*;
 
 public class Price_Natr_Id {
     @Autowired
@@ -43,62 +46,27 @@ public class Price_Natr_Id {
     private String frml_id = null;
     private double classId;
 
-    Map<Integer, String> class_id = new HashMap();
-    Map<Integer, String> price_cd = new HashMap<>();
-    Map<String, String> tktTypeID = new HashMap<>();
-    Map<String, String> voygr_id = new HashMap<>();
-
     private Double diabolo_amt_single = 0d;
     private Double diabolo_amt_total = 0d;
 
     private Double tkt_price_eur = 0d;
-    private Double[] params = new Double[37];
+
     private Double trf_pp_price_eur = 0.0;
     private PriceCode priceCode;
     private PcVoygr pcVoygr;
     private TktPrmtr tktPrmtr;
     private PcVoygrClass pcVoygrClass;
+    private Formula formula;
+    private Double[] E1;
+    private Double[] DS;
+    private Double[] params;
 
-    public Price_Natr_Id(){
-        class_id.put(1, "RTP_T_CL_FIRST");
-        class_id.put(2, "RTP_T_CL_SECOND");
-        class_id.put(3, "RTP_T_CL_BOTH");
-        class_id.put(4, "RTP_T_CL_IRRELEVANT");
-        class_id.put(5, "RTP_T_CL_UPGRADE");
-
-        price_cd.put(1, "RTP_T_PN_CLASSIC");
-        price_cd.put(2, "RTP_T_PN_ZONE");
-        price_cd.put(3, "RTP_T_PN_FIXED");
-        price_cd.put(4, "RTP_T_PN_CLASSIC_PLUS");
-        price_cd.put(5, "RTP_T_PN_ZONE_PLUS");
-        price_cd.put(6, "RTP_T_PN_FIXED_PLUS");
-        price_cd.put(7, "RTP_T_PN_CLASSIC_MAX");
-        price_cd.put(8, "RTP_T_PN_GEOG");
-        price_cd.put(9, "RTP_T_PN_GEOG_PLUS");
-        price_cd.put(10, "RTP_T_PN_OTHER");
-        price_cd.put(11, "RTP_T_PN_MTARIFF");
-        price_cd.put(12, "RTP_T_PN_MTARIFF_PLUS");
-        price_cd.put(13, "RTP_T_PN_MTARIFF_MAX");
-
-        tktTypeID.put("0", "RTP_T_TT_SORRY_PASS"); //Sorry pass
-        tktTypeID.put("1", "RTP_T_TT_SIMPLE"); //Simple ticket
-        tktTypeID.put("2", "RTP_T_TT_COMBINED"); //Combined ticket
-        tktTypeID.put("3", "RTP_T_TT_AGLOCARD"); //Multiple trip within agglom.
-        tktTypeID.put("4", "RTP_T_TT_FIXED"); //Fixed price ticket
-        tktTypeID.put("5", "RTP_T_TT_FIXED_BP"); //Fixed price bonus pass
-        tktTypeID.put("6", "RTP_T_TT_WEEKEND"); //Weekend ticket
-        tktTypeID.put("7", "RTP_T_TT_MINER"); //Mine worker ticket
-        tktTypeID.put("8", "RTP_T_TT_CNTNGNT"); //Contingent event ticket
-        tktTypeID.put("9", "RTP_T_TT_CNTNGNT_COMBINED"); //Combined contingent event ticket
-        tktTypeID.put("A", "RTP_T_TT_FIXED_HPPNG"); //Happening fixed price ticket
-        tktTypeID.put("V", "RTP_T_TT_CNTNGNT_HOTSPOT"); //Hotspot card
-
-        voygr_id.put("1", "RTP_T_VY_ADULT");
-        voygr_id.put("2", "RTP_T_VY_CHILD");
-        voygr_id.put("3", "RTP_T_VY_BENE1");
-        voygr_id.put("4", "RTP_T_VY_BENE2");
-        voygr_id.put("5", "RTP_T_VY_BENE3");
-        voygr_id.put("6", "RTP_T_VY_ADTNL_ADULT");
+    public Price_Natr_Id(Double[] params, Double[] E1, Double[] DS, PriceCode priceCode, Formula formula) {
+        this.params = params;
+        this.E1 = E1;
+        this.DS = DS;
+        this.priceCode = priceCode;
+        this.formula = formula;
     }
 
     public double doClassic(PriceRequest priceRequest) {
@@ -111,7 +79,7 @@ public class Price_Natr_Id {
         if (priceCode.getPriceFrmlId().isEmpty())
             priceCode.setPriceFrmlId("RT_CLASSIC");
         try {
-            trf_pp_price_eur = Common.invokeForumla(frml_id);
+            trf_pp_price_eur = Common.invokeForumla(frml_id, E1, DS, params);
         } catch (InvocationTargetException e) {
             priceCode.setTrfPpFrmlId("SAS_DBF_TT_FORMULA");
         }
@@ -198,7 +166,7 @@ public class Price_Natr_Id {
             //execute formula
             double result1 = 0, result2 = 0;
             try {
-                result1 = Common.invokeForumla(frml_id);
+                result1 = Common.invokeForumla(frml_id, E1, DS, params);
                 //on error SAS_TT_FORMULA_ERROR
             } catch (InvocationTargetException e) {
                 priceCode.setTrfPpFrmlId("SAS_DBF_TT_FORMULA");
@@ -220,7 +188,7 @@ public class Price_Natr_Id {
             params[11] = (double) tktPrmtr.getTpNormMinPriceClass2();
             params[13] = tktPrmtr.getTpNormMinPriceClass2Eur();
             try {
-                result2 = Common.invokeForumla(frml_id);
+                result2 = Common.invokeForumla(frml_id, E1, DS, params);
                 //on error SAS_TT_FORMULA_ERROR
             } catch (InvocationTargetException e) {
                 priceCode.setTrfPpFrmlId("SAS_DBF_TT_FORMULA");
@@ -244,7 +212,7 @@ public class Price_Natr_Id {
             }
             try {
                 //ex RT_CLASSIC_UPGRADE [ invoke upgrade forumla of retrieved on ]
-                trf_pp_price_eur = Common.invokeForumla(frml_id + "_UPGRADE");
+                trf_pp_price_eur = Common.invokeForumla(frml_id + "_UPGRADE", E1, DS, params);
                 //on error SAS_TT_FORMULA_ERROR
             } catch (InvocationTargetException e) {
                 priceCode.setTrfPpFrmlId("SAS_DBF_TT_FORMULA");
@@ -252,7 +220,7 @@ public class Price_Natr_Id {
         } else {
             try {
                 //ex RT_CLASSIC_UPGRADE [ invoke upgrade forumla of retrieved on ]
-                trf_pp_price_eur = Common.invokeForumla(frml_id);
+                trf_pp_price_eur = Common.invokeForumla(frml_id, E1, DS, params);
                 //on error SAS_TT_FORMULA_ERROR
             } catch (InvocationTargetException e) {
                 priceCode.setTrfPpFrmlId("SAS_DBF_TT_FORMULA");
@@ -387,7 +355,7 @@ public class Price_Natr_Id {
             frml_id = priceCode.getPriceFrmlId();
         if (class_id.get(priceRequest.getClass_id()).equalsIgnoreCase("RTP_T_CL_FIRST")) {
             try {
-                tkt_price_eur = Common.invokeForumla(frml_id);
+                tkt_price_eur = Common.invokeForumla(frml_id, E1, DS, params);
             } catch (InvocationTargetException e) {
                 priceCode.setTrfPpFrmlId("SAS_DBF_TT_FORMULA");
             }
@@ -396,7 +364,7 @@ public class Price_Natr_Id {
             params[22] = 1d;
             params[23] = 0d;
             try {
-                tkt_price_eur = Common.invokeForumla(frml_id);
+                tkt_price_eur = Common.invokeForumla(frml_id, E1, DS, params);
             } catch (InvocationTargetException e) {
                 priceCode.setTrfPpFrmlId("SAS_DBF_TT_FORMULA");
             }
@@ -404,20 +372,20 @@ public class Price_Natr_Id {
             double result1 = 0, result2 = 0;
             params[11] = tktPrmtr.getTpNormCffcntClass1();
             try {
-                result1 = trf_pp_price_eur = Common.invokeForumla(frml_id);
+                result1 = trf_pp_price_eur = Common.invokeForumla(frml_id, E1, DS, params);
             } catch (InvocationTargetException e) {
                 priceCode.setTrfPpFrmlId("SAS_DBF_TT_FORMULA");
             }
             params[11] = tktPrmtr.getTpNormCffcntClass2();
             try {
-                result2 = trf_pp_price_eur = Common.invokeForumla(frml_id);
+                result2 = trf_pp_price_eur = Common.invokeForumla(frml_id, E1, DS, params);
             } catch (InvocationTargetException e) {
                 priceCode.setTrfPpFrmlId("SAS_DBF_TT_FORMULA");
             }
             params[3] = result1;
             params[4] = result2;
             try {
-                tkt_price_eur = trf_pp_price_eur = Common.invokeForumla(frml_id + "_UPGRADE");
+                tkt_price_eur = trf_pp_price_eur = Common.invokeForumla(frml_id + "_UPGRADE", E1, DS, params);
             } catch (InvocationTargetException e) {
                 priceCode.setTrfPpFrmlId("SAS_DBF_TT_FORMULA");
             }
@@ -477,7 +445,7 @@ public class Price_Natr_Id {
             frml_id = priceCode.getPriceFrmlId();
 
         try {
-            trf_pp_price_eur = Common.invokeForumla(frml_id);
+            trf_pp_price_eur = Common.invokeForumla(frml_id, E1, DS, params);
         } catch (InvocationTargetException e) {
             priceCode.setTrfPpFrmlId("SAS_DBF_TT_FORMULA");
         }

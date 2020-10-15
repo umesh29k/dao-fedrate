@@ -39,16 +39,4 @@ public class Main {
         }
         return priceResult;
     }
-/*
-
-    @ApiParam(
-            name = "Object",
-            type = "InsertData",
-            required = true)
-    @PostMapping("/get/insert")
-    public void insertService(@RequestBody Calndr calndr) {
-        insertService.insertCalndr(calndr);
-    }
-*/
-
 }

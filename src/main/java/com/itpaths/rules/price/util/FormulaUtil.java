@@ -58,14 +58,14 @@ public class FormulaUtil {
 
     private double RT_VIA_PRICE() {
         return (min(min(RNDFRM(E1[(int) max((((roundOff(param[1], 4)
-                + (min(RNDFRM(DS[Integer.parseInt(param[31].toString())]), 150) * roundOff(param[5], 4)))
+                + (min(RNDFRM(DS[param[31].intValue()]), 150) * roundOff(param[5], 4)))
                 * (1 - param[6]) + (roundOff(param[7], 4) * param[8] + param[9]
                 * roundOff(param[5], 4)) * param[6] + param[10])
                 * ((RT_1STCLASS_DSTNC())) * param[12]), (param[13] * param[8]))]),
                 ((11.4 + abs((5.9 * (1 - ((RT_1STCLASS_DSTNC())))
                 / 0.54))) * ((abs(param[6] - 0.5) * 100000) + 1))), param[20])
                 + min(min(RNDFRM(E1[(int) max((((roundOff(param[1], 4)
-                + (min(RNDFRM(DS[Integer.parseInt(param[32].toString())]), 150) * roundOff(param[5], 4)))
+                + (min(RNDFRM(DS[param[32].intValue()]), 150) * roundOff(param[5], 4)))
                 * (1 - param[6]) + (roundOff(param[7], 4) * param[8] + param[9]
                 * roundOff(param[5], 4)) * param[6] + param[10]) * ((RT_1STCLASS_DSTNC()))
                 * param[12]), (param[13] * param[8]))]), ((11.4 + abs((5.9
@@ -75,7 +75,7 @@ public class FormulaUtil {
 
     private int RT_NORMAL_PRICE() {
         return (int) ((RNDFRM(E1[(int) max((((roundOff(param[1], 4)
-                        + ((min(RNDFRM(DS[Integer.parseInt(param[30].toString())]), 150)) * roundOff(param[5], 4)))
+                        + ((min(RNDFRM(DS[param[30].intValue()]), 150)) * roundOff(param[5], 4)))
                         * (1 - param[6]) + (roundOff(param[7], 4) * param[8] + param[9]
                         * roundOff(param[5], 4)) * param[6] + param[10])
                         * ((RT_1STCLASS_DSTNC())) * param[12]), (param[13] * param[8]))])

@@ -20,6 +20,15 @@ public class PriceResult {
     @ApiModelProperty(notes = "Status", example = "SAS_PRICE_ERR")
     private String status;
 
+    public PriceResult() {
+        this.total_price_eur = "0";
+        this.total_pp_price_eur = "0";
+        this.mobib_price_eur = "0";
+        this.mobib_tarif_code = "";
+        this.diabolo_amt_eur = "0";
+        this.status = status;
+    }
+
     @Override
     public String toString() {
         return "PriceResult{" +
