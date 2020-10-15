@@ -73,6 +73,7 @@ public class Price_Natr_Id {
         try {
             get_distances(priceRequest);
         } catch (ApiException e) {
+            formula.setStatus(e.getMsg());
             e.printStackTrace();
         }
         get_params(priceRequest);
@@ -231,9 +232,10 @@ public class Price_Natr_Id {
 
     private PcVoygrClass get_pc_voygr_class(String voygr_id, String priceCd, int classId, Integer pcVrsn) throws ApiException {
         String classIdStr = class_id.get(classId);
-        List<PcVoygrClass> pcVoygrClass = dataRetrievalService.getPcVoygerClass(voygr_id, priceCd, classIdStr, pcVrsn);
+        List<PcVoygrClass> pcVoygrClass = pcVoygrClassRepo.findByPriceCdAndVoygrIdAndPcVrsnAndClassId(priceCd, voygr_id, pcVrsn, classIdStr);
         if (pcVoygrClass.size() == 0) {
-            pcVoygrClass = dataRetrievalService.getPcVoygerClass(voygr_id, priceCd, "RTP_T_CL_IRRELEVANT", pcVrsn);
+            pcVoygrClass = pcVoygrClassRepo.findByPriceCdAndVoygrIdAndPcVrsnAndClassId(voygr_id,
+                    priceCd, pcVrsn, "RTP_T_CL_IRRELEVANT");
         }
         if (pcVoygrClass.size() == 0)
             throw new ApiException("SAS_VOYGR_CLASS_INV");
@@ -241,7 +243,7 @@ public class Price_Natr_Id {
     }
 
     private void get_params(PriceRequest priceRequest) {
-        tktPrmtr = dataRetrievalService.getTicketParams();
+        tktPrmtr = tktPrmtrRepo.find();
         params[1] = tktPrmtr.getTpNormFxdChargeEur();
         params[2] = sdf_cal_tkt_dstnc().get("taxable_distance"); //return taxable_distance
         params[5] = tktPrmtr.getTpNormUnitPriceEur();
@@ -340,12 +342,11 @@ public class Price_Natr_Id {
     private void do_zone(PriceRequest priceRequest) throws ApiException {
         Double distance = get_distances(priceRequest);
         //Does this sub-routine get_distance need params??
-        PcLimit pcLimit = dataRetrievalService.getPcLimit(priceRequest.getPrice_cd(),
+        PcLimit pcLimit = pcLimitRepo.findByPriceCdAndPcVrsnAndVoygrIdAndPcDstncAndPcNoInGrp(priceRequest.getPrice_cd(),
                 priceCode.getPcVrsn(),
                 priceRequest.getVoygr_id(),
                 distance.intValue(),
-                qty.intValue()
-        );
+                qty.intValue());
         get_params(priceRequest);
         params[21] = diabolo_amt_total;
         params[20] = pcLimit.getPcLimitAmtEur();
@@ -420,7 +421,7 @@ public class Price_Natr_Id {
         }
         get_params(priceRequest);
         params[2] = 0d;
-        PcFtktPrice pcFtktPrice = dataRetrievalService.getPcFtktPrice(priceRequest.getPrice_cd(),
+        PcFtktPrice pcFtktPrice = pcFtktPriceRepo.findByPriceCdAndPcVrsnAndClassId(priceRequest.getPrice_cd(),
                 priceCode.getPcVrsn(),
                 priceRequest.getClass_id());
         if (tktTypeID.get(priceRequest.getTkt_type_id()).equalsIgnoreCase("RTP_T_TT_FIXED")
@@ -433,9 +434,10 @@ public class Price_Natr_Id {
             } catch (ApiException e) {
                 e.printStackTrace();
             }
-            PcVoygrClass pcVoygrClass = dataRetrievalService.getPcVoygerClass(priceRequest.getVoygr_id(),
+            pcVoygrClassRepo.findByPriceCdAndVoygrIdAndPcVrsnAndClassId(
                     priceRequest.getPrice_cd(),
-                    priceRequest.getClass_id(), priceCode.getPcVrsn()).get(0);
+                    priceRequest.getVoygr_id(), priceCode.getPcVrsn(),
+                    priceRequest.getClass_id()).get(0);
             params[20] = pcVoygrClass.getPcDfltAmtEur() + diabolo_amt_single;
         }
 

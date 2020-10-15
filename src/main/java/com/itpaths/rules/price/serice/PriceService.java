@@ -31,7 +31,10 @@ public class PriceService {
     private PriceCodeRepository priceCodeRepo;
     @Autowired
     private TtFormulaRepository ttFormulaRepo;
-
+    @Autowired
+    private TktPrmtrRepository tktPrmtrRepo;
+    @Autowired
+    private Price_Natr_Id price_natr_id;
 
     private Double tkt_price_eur = 0d;
     private Double[] params = new Double[37];
@@ -55,10 +58,7 @@ public class PriceService {
     }
 
     public List<PriceResult> calculate(PriceRequest priceRequest) throws ApiException {
-        /**
-         * invoke rule
-         */
-        Formula formula = new Formula();
+       Formula formula = new Formula();
         List<PriceResult> priceResults = new ArrayList<>();
 
         /**
@@ -79,7 +79,12 @@ public class PriceService {
                     PriceResult priceResult = new PriceResult();
                     priceCode = pc;
                     int pNatrId = Integer.parseInt(priceCode.getPriceNatrId());
+
                     formula.setPrice_natr_id(Constants.price_cd.get(pNatrId));
+                    formula.setPriceNatrId(price_natr_id);
+                    formula.setPriceRequest(priceRequest);
+                    formula.setPriceResult(priceResult);
+
                     //Invoke Rules
                     formula = rules.getMethod(formula);
                     System.out.println("INFO:: Formula Invoked: " + formula.toString());
@@ -87,7 +92,7 @@ public class PriceService {
                     if (formula.getMethod() != null) {
                         if (!formula.getMethod().isEmpty()) {
                             //invoke methods retrieved from the METHOD decision table
-                            tkt_price_eur = getTktPriceEur(priceRequest, formula, priceResult);
+                            tkt_price_eur = formula.getTkt_price_eur();
                             priceResult.setStatus(formula.getStatus());
                             priceResult.setTotal_price_eur(tkt_price_eur.toString());
                         } else if (formula.getStatus() == null)
@@ -116,7 +121,7 @@ public class PriceService {
                                 if (Constants.class_id.get(Integer.parseInt(priceRequest.getClass_id()))
                                         .equalsIgnoreCase("RTP_T_CL_UPGRADE")) {
                                     //calculate price 1st class
-                                    tktPrmtr = dataRetrievalService.getTicketParams();
+                                    tktPrmtr = tktPrmtrRepo.find();
 
                                     //Invoke Formula
                                     double res1st = 0;
@@ -193,9 +198,8 @@ public class PriceService {
         Method sumInstanceMethod;
         try {
             sumInstanceMethod = Price_Natr_Id.class.getMethod(formula.getMethod(), PriceRequest.class);
-            Price_Natr_Id operationsInstance = new Price_Natr_Id(params, E1, DS, priceCode, formula);
             result
-                    = (Double) sumInstanceMethod.invoke(operationsInstance, priceRequest);
+                    = (Double) sumInstanceMethod.invoke(price_natr_id, priceRequest);
         } catch (InvocationTargetException | IllegalAccessException | NoSuchMethodException e) {
             e.printStackTrace();
         }

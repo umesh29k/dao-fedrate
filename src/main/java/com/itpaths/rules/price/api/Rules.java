@@ -1,6 +1,8 @@
 package com.itpaths.rules.price.api;
 
 import com.itpaths.rules.price.config.TrackAgendaEventListener;
+import com.itpaths.rules.price.model.PriceRequest;
+import com.itpaths.rules.price.model.PriceResult;
 import com.itpaths.rules.price.model.dto.Formula;
 import org.apache.logging.log4j.LogManager;
 import org.drools.decisiontable.DecisionTableProviderImpl;
