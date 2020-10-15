@@ -104,8 +104,7 @@ public class PriceService {
                             //invoke methods retrieved from the METHOD decision table
                             try {
                                 priceResult = getTktPriceEur(priceRequest, formula, priceResult);
-                            }
-                            catch(Exception e){
+                            } catch (Exception e) {
                                 priceResult.setStatus(e.getMessage());
                             }
                         } else if (formula.getStatus() == null)
@@ -209,38 +208,38 @@ public class PriceService {
     private PriceResult getTktPriceEur(PriceRequest priceRequest, Formula formula, PriceResult priceResult) throws ApiException {
         double result = 0;
         PriceResult pr = new PriceResult();
-        Method sumInstanceMethod;
-        try {
-            sumInstanceMethod = Price_Natr_Id.class.getMethod(formula.getMethod(), PriceRequest.class);
-            Price_Natr_Id price_natr_id = new Price_Natr_Id(priceCodeRepo, tktPrmtrRepo,
-                    pcVoygrRepo, pcVoygrClassRepo, cityNetSupplmntRepo, orgnsmRepo, calndrRepo, pcLimitRepo, pcFtktPriceRepo, ttFormulaRepo,
-                    E1, DS, params, priceCode, formula);
-            result
-                    = (Double) sumInstanceMethod.invoke(price_natr_id, priceRequest);
-            if (formula.getMethod().equalsIgnoreCase("do_classic")) {
-                pr = price_natr_id.do_classic(priceRequest);
-            } else if (formula.getMethod().equalsIgnoreCase("do_classic_max")) {
-                pr = price_natr_id.do_classic_max(priceRequest);
-            } else if (formula.getMethod().equalsIgnoreCase("do_classic_plus")) {
-                pr = price_natr_id.do_classic_plus(priceRequest);
-            } else if (formula.getMethod().equalsIgnoreCase("do_fixed")) {
-                pr = price_natr_id.do_fixed(priceRequest);
-            } else if (formula.getMethod().equalsIgnoreCase("do_fixed_plus")) {
-                pr = price_natr_id.do_fixed_plus(priceRequest);
-            } else if (formula.getMethod().equalsIgnoreCase("do_zone")) {
-                pr = price_natr_id.do_zone(priceRequest);
-            } else if (formula.getMethod().equalsIgnoreCase("do_zone_plus")) {
-                pr = price_natr_id.do_zone_plus(priceRequest);
-            } else if (formula.getMethod().equalsIgnoreCase("do_classic")) {
-                pr = price_natr_id.do_classic(priceRequest);
-            } else if (formula.getMethod().equalsIgnoreCase("do_mtariff_plus")) {
-                pr = price_natr_id.do_mtariff_plus(priceRequest);
-            } else if (formula.getMethod().equalsIgnoreCase("do_classic")) {
-                pr = price_natr_id.do_classic(priceRequest);
-            }
-        } catch (InvocationTargetException | IllegalAccessException | NoSuchMethodException e) {
-            e.printStackTrace();
+        //sMethod sumInstanceMethod;
+        //try {
+        //sumInstanceMethod = Price_Natr_Id.class.getMethod(formula.getMethod(), PriceRequest.class);
+        Price_Natr_Id price_natr_id = new Price_Natr_Id(priceCodeRepo, tktPrmtrRepo,
+                pcVoygrRepo, pcVoygrClassRepo, cityNetSupplmntRepo, orgnsmRepo, calndrRepo, pcLimitRepo, pcFtktPriceRepo, ttFormulaRepo,
+                E1, DS, params, priceCode, formula);
+        //result
+        //  = (Double) sumInstanceMethod.invoke(price_natr_id, priceRequest);
+        if (formula.getMethod().equalsIgnoreCase("do_classic")) {
+            pr = price_natr_id.do_classic(priceRequest);
+        } else if (formula.getMethod().equalsIgnoreCase("do_classic_max")) {
+            pr = price_natr_id.do_classic_max(priceRequest);
+        } else if (formula.getMethod().equalsIgnoreCase("do_classic_plus")) {
+            pr = price_natr_id.do_classic_plus(priceRequest);
+        } else if (formula.getMethod().equalsIgnoreCase("do_fixed")) {
+            pr = price_natr_id.do_fixed(priceRequest);
+        } else if (formula.getMethod().equalsIgnoreCase("do_fixed_plus")) {
+            pr = price_natr_id.do_fixed_plus(priceRequest);
+        } else if (formula.getMethod().equalsIgnoreCase("do_zone")) {
+            pr = price_natr_id.do_zone(priceRequest);
+        } else if (formula.getMethod().equalsIgnoreCase("do_zone_plus")) {
+            pr = price_natr_id.do_zone_plus(priceRequest);
+        } else if (formula.getMethod().equalsIgnoreCase("do_classic")) {
+            pr = price_natr_id.do_classic(priceRequest);
+        } else if (formula.getMethod().equalsIgnoreCase("do_mtariff_plus")) {
+            pr = price_natr_id.do_mtariff_plus(priceRequest);
+        } else if (formula.getMethod().equalsIgnoreCase("do_classic")) {
+            pr = price_natr_id.do_classic(priceRequest);
         }
+        /*} catch (InvocationTargetException | IllegalAccessException | NoSuchMethodException e) {
+            e.printStackTrace();
+        }*/
         return pr;
     }
 }

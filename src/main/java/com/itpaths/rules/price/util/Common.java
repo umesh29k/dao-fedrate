@@ -40,7 +40,6 @@ public class Common {
             }
             else
                 throw new ApiException("No formula id found");
-
         }
         else{
             throw new ApiException("No formula id found");
