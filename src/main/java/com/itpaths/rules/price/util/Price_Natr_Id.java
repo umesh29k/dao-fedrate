@@ -69,7 +69,7 @@ public class Price_Natr_Id {
         this.formula = formula;
     }
 
-    public double doClassic(PriceRequest priceRequest) {
+    public double do_classic(PriceRequest priceRequest) {
         try {
             get_distances(priceRequest);
         } catch (ApiException e) {
@@ -408,7 +408,7 @@ public class Price_Natr_Id {
         if (priceRequest.getEvent_only_flag().equalsIgnoreCase("Y"))
             tkt_price_eur = pcVoygr.getPcSuplmntAmtEur() * qty;
         else
-            tkt_price_eur = (double) doClassic(priceRequest);
+            tkt_price_eur = (double) do_classic(priceRequest);
     }
 
     public void do_fixed(PriceRequest priceRequest) {
@@ -468,7 +468,7 @@ public class Price_Natr_Id {
             else
                 tkt_price_eur = pcVoygr.getPcSuplmntAmtEur();
         } else
-            doClassic(priceRequest);
+            do_classic(priceRequest);
         do_classic_plus(priceRequest);
     }
 
@@ -479,7 +479,7 @@ public class Price_Natr_Id {
                     priceCode.getPriceCd(), 4,
                     priceCode.getPcVrsn());
             params[20] = pcVoygrClass.getPcMaxAmtEur() + diabolo_amt_single;
-            doClassic(priceRequest);
+            do_classic(priceRequest);
         } catch (ApiException e) {
             e.printStackTrace();
         }
