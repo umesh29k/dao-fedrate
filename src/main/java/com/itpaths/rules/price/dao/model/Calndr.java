@@ -4,7 +4,7 @@ import lombok.Data;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.sql.Date;
+import java.util.Date;
 
 @Entity
 @Data
@@ -21,7 +21,7 @@ public class Calndr implements Serializable {
     private Integer id;
 
     @Column(name = "CALNDR_DATE", nullable = false)
-    private Date calndrDate;
+    private String calndrDate;
 
     @Column(name = "STS_CD")
     private String stsCd;
@@ -48,6 +48,6 @@ public class Calndr implements Serializable {
     private String operId;
 
     @Column(name = "TIME_STAMP")
-    private Date timeStamp;
+    private String timeStamp;
 
 }

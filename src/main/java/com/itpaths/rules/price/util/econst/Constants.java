@@ -5,7 +5,7 @@ import java.util.Map;
 
 public class Constants {
     public static Map<Integer, String> class_id;
-    public static Map<Integer, String> price_cd;
+    public static Map<String, String> price_cd;
     public static Map<String, String> tktTypeID;
     public static Map<String, String> voygr_id;
 
@@ -18,19 +18,19 @@ public class Constants {
         class_id.put(5, "RTP_T_CL_UPGRADE");
 
         price_cd = new HashMap();
-        price_cd.put(1, "RTP_T_PN_CLASSIC");
-        price_cd.put(2, "RTP_T_PN_ZONE");
-        price_cd.put(3, "RTP_T_PN_FIXED");
-        price_cd.put(4, "RTP_T_PN_CLASSIC_PLUS");
-        price_cd.put(5, "RTP_T_PN_ZONE_PLUS");
-        price_cd.put(6, "RTP_T_PN_FIXED_PLUS");
-        price_cd.put(7, "RTP_T_PN_CLASSIC_MAX");
-        price_cd.put(8, "RTP_T_PN_GEOG");
-        price_cd.put(9, "RTP_T_PN_GEOG_PLUS");
-        price_cd.put(10, "RTP_T_PN_OTHER");
-        price_cd.put(11, "RTP_T_PN_MTARIFF");
-        price_cd.put(12, "RTP_T_PN_MTARIFF_PLUS");
-        price_cd.put(13, "RTP_T_PN_MTARIFF_MAX");
+        price_cd.put("01", "RTP_T_PN_CLASSIC");
+        price_cd.put("02", "RTP_T_PN_ZONE");
+        price_cd.put("03", "RTP_T_PN_FIXED");
+        price_cd.put("04", "RTP_T_PN_CLASSIC_PLUS");
+        price_cd.put("05", "RTP_T_PN_ZONE_PLUS");
+        price_cd.put("06", "RTP_T_PN_FIXED_PLUS");
+        price_cd.put("07", "RTP_T_PN_CLASSIC_MAX");
+        price_cd.put("08", "RTP_T_PN_GEOG");
+        price_cd.put("09", "RTP_T_PN_GEOG_PLUS");
+        price_cd.put("010", "RTP_T_PN_OTHER");
+        price_cd.put("11", "RTP_T_PN_MTARIFF");
+        price_cd.put("12", "RTP_T_PN_MTARIFF_PLUS");
+        price_cd.put("13", "RTP_T_PN_MTARIFF_MAX");
 
         tktTypeID = new HashMap();
         tktTypeID.put("0", "RTP_T_TT_SORRY_PASS"); //Sorry pass

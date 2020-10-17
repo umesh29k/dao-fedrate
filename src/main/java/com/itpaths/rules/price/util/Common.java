@@ -2,11 +2,10 @@ package com.itpaths.rules.price.util;
 
 import com.itpaths.rules.price.exception.ApiException;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 public class Common {
-    public static double invokeForumla(String frml_id, Double[] E1, Double[] DS, Double[] param) throws InvocationTargetException, ApiException {
+    public static double invokeForumla(String frml_id, Double[] E1, Double[] DS, Double[] param) throws Exception, ApiException {
         double result = 0;
         //Method sumInstanceMethod;
         //try {
@@ -45,7 +44,7 @@ public class Common {
             throw new ApiException("No formula id found");
         }
         //result = (Double) sumInstanceMethod.invoke(formula);
-        /*} catch (InvocationTargetException | IllegalAccessException | NoSuchMethodException e) {
+        /*} catch (Exception | IllegalAccessException | NoSuchMethodException e) {
             e.printStackTrace();
         }*/
         return result;

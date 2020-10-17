@@ -18,7 +18,7 @@ public class FormulaUtil {
     }
 
     public double roundOff(double num, int place) {
-        DecimalFormat df = null;
+        DecimalFormat df = new DecimalFormat();
         if (place == 2)
             df = new DecimalFormat("#.##");
         else if (place == 1)
@@ -38,8 +38,13 @@ public class FormulaUtil {
         double f = roundOff(param[14], 3);
         double g = roundOff(param[15], 0);
         double h = param[16] * param[17];
-
-        return ((int)((int) ((max((( a * ( 1 - param[6] ) + b * c) * d ), e )) / f) + g ) * param[14] ) * h;
+        double i = (max(((a * (1 - param[6]) + b * c) * d), e));
+        if (f == 0)
+            f = 1;
+        if (param[14] == 0)
+            param[14] = 1d;
+        double res = ((int) ((int) (i / f) + g) * param[14]) * h;
+        return res;
 
        /* return ((int) ((int) ((max((((param[1] + (min(max(param[2], param[3]), param[4]) * param[5]))
                 * (1 - param[6]) + (param[7] * param[8] + param[9] * param[5]) * param[7] + param[10])
@@ -89,8 +94,8 @@ public class FormulaUtil {
             double n = ((11.4 + abs((5.9 * (1 - ((RT_1STCLASS_DSTNC()))) / 0.54)))
                     * ((abs(param[6] - 0.5) * 100000) + 1));
 
-            return (min(min(RNDFRM(E1[(int) max(((a * b + c * d) * e), f)]),g),param[20])
-                    + min(min(RNDFRM(E1[(int) max(((h * i + j * k ) * l * param[12]), m)]), n)
+            return (min(min(RNDFRM(E1[(int) max(((a * b + c * d) * e), f)]), g), param[20])
+                    + min(min(RNDFRM(E1[(int) max(((h * i + j * k) * l * param[12]), m)]), n)
                     , param[20])) * min(param[32], 1);
 
            /* return (min(min(RNDFRM(E1[(int) max((((roundOff(param[1], 4)
@@ -107,8 +112,7 @@ public class FormulaUtil {
                     * param[12]), (param[13] * param[8]))]), ((11.4 + abs((5.9
                     * (1 - ((RT_1STCLASS_DSTNC()))) / 0.54)))
                     * ((abs(param[6] - 0.5) * 100000) + 1))), param[20])) * min(param[32], 1);*/
-        }
-        catch(ArrayIndexOutOfBoundsException e){
+        } catch (ArrayIndexOutOfBoundsException e) {
             e.printStackTrace();
             return 0;
         }
@@ -127,7 +131,7 @@ public class FormulaUtil {
             double i = (RT_TRIPS());
 
             return (int) ((RNDFRM(E1[(int) max((((roundOff(param[1], 4) +
-                    a )* b + c * d) * e * param[12]) , f ) ] ) * i ) * g * h );
+                    a) * b + c * d) * e * param[12]), f)]) * i) * g * h);
 
             /*return (int) ((RNDFRM(E1[(int) max((((roundOff(param[1], 4)
                     + ((min(RNDFRM(DS[param[30].intValue()]), 150)) * roundOff(param[5], 4)))
@@ -152,7 +156,7 @@ public class FormulaUtil {
     public double RT_1STCLASS_DSTNC() {
         double a = (0.10 * min(max((37 - param[30]), 0), 1));
         double b = (0.14 * min(max((52 - param[30]), 0), 1));
-        return max(param[11] - a - b , 1);
+        return max(param[11] - a - b, 1);
        /* return max(param[11]
                 - (0.10 * min(max((37 - param[30]), 0), 1))
                 - (0.14 * min(max((52 - param[30]), 0), 1)), 1);*/
@@ -166,7 +170,7 @@ public class FormulaUtil {
         double a = (param[16] * param[18]);
         double b = (2 * min(param[32], 1));
         double c = (2 * min(param[33], 1));
-        return max(max(a , b), c);
+        return max(max(a, b), c);
         //return max(max((param[16] * param[18]), (2 * min(param[32], 1))), (2 * min(param[33], 1)));
     }
 }

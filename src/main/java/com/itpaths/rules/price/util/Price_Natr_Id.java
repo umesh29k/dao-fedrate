@@ -48,7 +48,7 @@ public class Price_Natr_Id {
     private Double[] E1;
     private Double[] DS;
     private Double[] params;
-    private PriceResult priceResult;
+    //private PriceResult priceResult;
 
     public Price_Natr_Id(PriceCodeRepository priceCodeRepo, TktPrmtrRepository tktPrmtrRepo,
                          PcVoygrRepository pcVoygrRepo, PcVoygrClassRepository pcVoygrClassRepo, CityNetSupplmntRepository cityNetSupplmntRepo, OrgnsmRepository orgnsmRepo, CalndrRepository calndrRepo, PcLimitRepository pcLimitRepo, PcFtktPriceRepository pcFtktPriceRepo, TtFormulaRepository ttFormulaRepo,
@@ -84,6 +84,7 @@ public class Price_Natr_Id {
         frml_id = priceCode.getPriceFrmlId();
         try {
             trf_pp_price_eur = Common.invokeForumla(frml_id, E1, DS, params);
+            pr.setTotal_pp_price_eur(trf_pp_price_eur);
         } catch (Exception e) {
             priceCode.setTrfPpFrmlId("SAS_DBF_TT_FORMULA");
         }
@@ -96,7 +97,6 @@ public class Price_Natr_Id {
                         if (voygr_id.get(priceRequest.getVoygr_id()) != null)
                             if (voygr_id.get(priceRequest.getVoygr_id()).equalsIgnoreCase("RTP_T_VY_ADULT")) {
                                 pcVoygr = pcVoygrRepo.findByVoygrId(priceRequest.getVoygr_id());
-
                                 params[6] = Double.parseDouble(pcVoygr.getPcRdctnCffcnt().toString());
                                 if (price_cd.get(priceCode.getPriceNatrId()).equalsIgnoreCase("RTP_T_PN_MTARIFF_PLUS")) {
                                     params[21] = pcVoygr.getPcSuplmntAmtEur();
@@ -138,13 +138,14 @@ public class Price_Natr_Id {
                                             params[21] = pcVoygr.getPcSuplmntAmtEur();
                                             params[23] = (double) pcVoygr.getPcUplftAmtEur();
                                         }
-                                        tkt_price_eur = get_price_classic(priceRequest);
+                                        tkt_price_eur += get_price_classic(priceRequest);
                                     }
                                 }
                             }
                 } else {
                     PcVoygr pcVoygr = pcVoygrRepo.findByVoygrId(priceRequest.getVoygr_id());
-                    params[6] = Double.valueOf(pcVoygr.getPcRdctnCffcnt());
+                    if (pcVoygr != null)
+                        params[6] = Double.valueOf(pcVoygr.getPcRdctnCffcnt());
                     tkt_price_eur = get_price_classic(priceRequest);
                 }
         pr.setTotal_price_eur(tkt_price_eur);
@@ -153,88 +154,90 @@ public class Price_Natr_Id {
 
     private double get_price_classic(PriceRequest priceRequest) {
         double classId = 0;
-        params[21] += diabolo_amt_total; // Do we add this to or need to be assigned??
-        if (class_id.get(Double.parseDouble(priceRequest.getClass_id())).equalsIgnoreCase("RTP_T_CL_UPGRADE")) {
-            params[20] = 99999d;
-            if (priceCode.getPriceNatrId().equalsIgnoreCase("RTP_T_PN_CLASSIC_MAX")
-                    || priceCode.getPriceNatrId().equalsIgnoreCase("RTP_T_PN_MTARIFF_MAX")) {
-                classId = CLASS_CD.RTP_T_CL_FIRST.getKey();
-                try {
-                    PcVoygrClass pcVoygrClass = get_pc_voygr_class(priceRequest.getVoygr_id(),
-                            priceRequest.getPrice_cd(), 4,
-                            priceCode.getPcVrsn());
-                    params[20] = pcVoygrClass.getPcMaxAmtEur() + diabolo_amt_single;
-                } catch (ApiException e) {
-                    e.printStackTrace();
-                }
-            }
-            params[11] = tktPrmtr.getTpNormCffcntClass1();
-            params[13] = tktPrmtr.getTpNormMinPriceClass1Eur();
-            params[15] = 0d;
-            //execute formula
-            double result1 = 0, result2 = 0;
-            try {
-                result1 = Common.invokeForumla(frml_id, E1, DS, params);
-                //on error SAS_TT_FORMULA_ERROR
-            } catch (Exception e) {
-                priceCode.setTrfPpFrmlId("SAS_DBF_TT_FORMULA");
-            }
+        params[21] += diabolo_amt_total;
+        if (priceRequest.getClass_id() != null)
+            if (class_id.get(Integer.parseInt(priceRequest.getClass_id())) != null)// Do we add this to or need to be assigned??
+                if (class_id.get(Integer.parseInt(priceRequest.getClass_id())).equalsIgnoreCase("RTP_T_CL_UPGRADE")) {
+                    params[20] = 99999d;
+                    if (priceCode.getPriceNatrId().equalsIgnoreCase("RTP_T_PN_CLASSIC_MAX")
+                            || priceCode.getPriceNatrId().equalsIgnoreCase("RTP_T_PN_MTARIFF_MAX")) {
+                        classId = CLASS_CD.RTP_T_CL_FIRST.getKey();
+                        try {
+                            PcVoygrClass pcVoygrClass = get_pc_voygr_class(priceRequest.getVoygr_id(),
+                                    priceRequest.getPrice_cd(), 4,
+                                    priceCode.getPcVrsn());
+                            params[20] = pcVoygrClass.getPcMaxAmtEur() + diabolo_amt_single;
+                        } catch (ApiException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    params[11] = tktPrmtr.getTpNormCffcntClass1();
+                    params[13] = tktPrmtr.getTpNormMinPriceClass1Eur();
+                    params[15] = 0d;
+                    //execute formula
+                    double result1 = 0, result2 = 0;
+                    try {
+                        result1 = Common.invokeForumla(frml_id, E1, DS, params);
+                        //on error SAS_TT_FORMULA_ERROR
+                    } catch (Exception e) {
+                        priceCode.setTrfPpFrmlId("SAS_DBF_TT_FORMULA");
+                    }
 
-            params[20] = 99999d;
-            if (priceCode.getPriceNatrId().equalsIgnoreCase("RTP_T_PN_CLASSIC_MAX")
-                    || priceCode.getPriceNatrId().equalsIgnoreCase("RTP_T_PN_MTARIFF_MAX")) {
-                classId = CLASS_CD.RTP_T_CL_SECOND.getKey();
-                try {
-                    PcVoygrClass pcVoygrClass = get_pc_voygr_class(priceRequest.getVoygr_id(),
-                            priceRequest.getPrice_cd(), 4,
-                            priceCode.getPcVrsn());
-                    params[20] = pcVoygrClass.getPcMaxAmtEur() + diabolo_amt_single;
-                } catch (ApiException e) {
-                    e.printStackTrace();
+                    params[20] = 99999d;
+                    if (priceCode.getPriceNatrId().equalsIgnoreCase("RTP_T_PN_CLASSIC_MAX")
+                            || priceCode.getPriceNatrId().equalsIgnoreCase("RTP_T_PN_MTARIFF_MAX")) {
+                        classId = CLASS_CD.RTP_T_CL_SECOND.getKey();
+                        try {
+                            PcVoygrClass pcVoygrClass = get_pc_voygr_class(priceRequest.getVoygr_id(),
+                                    priceRequest.getPrice_cd(), 4,
+                                    priceCode.getPcVrsn());
+                            params[20] = pcVoygrClass.getPcMaxAmtEur() + diabolo_amt_single;
+                        } catch (ApiException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    params[11] = (double) tktPrmtr.getTpNormMinPriceClass2();
+                    params[13] = tktPrmtr.getTpNormMinPriceClass2Eur();
+                    try {
+                        result2 = Common.invokeForumla(frml_id, E1, DS, params);
+                        //on error SAS_TT_FORMULA_ERROR
+                    } catch (Exception e) {
+                        priceCode.setTrfPpFrmlId("SAS_DBF_TT_FORMULA");
+                    }
+                    params[3] = result1;
+                    params[4] = result2;
+                    params[13] = tktPrmtr.getTpNormMinPriceUpclassEur();
+                    params[20] = 99999d;
+                    if (priceCode.getPriceNatrId().equalsIgnoreCase("RTP_T_PN_CLASSIC_MAX")
+                            || priceCode.getPriceNatrId().equalsIgnoreCase("RTP_T_PN_MTARIFF_MAX")) {
+                        priceRequest.setClass_id(Integer.toString(CLASS_CD.RTP_T_CL_SECOND.getKey()));
+                        classId = Double.parseDouble(priceRequest.getClass_id());
+                        try {
+                            PcVoygrClass pcVoygrClass = get_pc_voygr_class(priceRequest.getVoygr_id(),
+                                    priceRequest.getPrice_cd(), 4,
+                                    priceCode.getPcVrsn());
+                            params[20] = pcVoygrClass.getPcMaxAmtEur() + diabolo_amt_single;
+                        } catch (ApiException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    try {
+                        //ex RT_CLASSIC_UPGRADE [ invoke upgrade forumla of retrieved on ]
+                        trf_pp_price_eur = Common.invokeForumla(frml_id + "_UPGRADE", E1, DS, params);
+                        //on error SAS_TT_FORMULA_ERROR
+                    } catch (Exception e) {
+                        priceCode.setTrfPpFrmlId("SAS_DBF_TT_FORMULA");
+                    }
+                } else {
+                    try {
+                        //ex RT_CLASSIC_UPGRADE [ invoke upgrade forumla of retrieved on ]
+                        trf_pp_price_eur = Common.invokeForumla(frml_id, E1, DS, params);
+                        //on error SAS_TT_FORMULA_ERROR
+                    } catch (Exception e) {
+                        priceCode.setTrfPpFrmlId("SAS_DBF_TT_FORMULA");
+                    }
                 }
-            }
-            params[11] = (double) tktPrmtr.getTpNormMinPriceClass2();
-            params[13] = tktPrmtr.getTpNormMinPriceClass2Eur();
-            try {
-                result2 = Common.invokeForumla(frml_id, E1, DS, params);
-                //on error SAS_TT_FORMULA_ERROR
-            } catch (Exception e) {
-                priceCode.setTrfPpFrmlId("SAS_DBF_TT_FORMULA");
-            }
-            params[3] = result1;
-            params[4] = result2;
-            params[13] = tktPrmtr.getTpNormMinPriceUpclassEur();
-            params[20] = 99999d;
-            if (priceCode.getPriceNatrId().equalsIgnoreCase("RTP_T_PN_CLASSIC_MAX")
-                    || priceCode.getPriceNatrId().equalsIgnoreCase("RTP_T_PN_MTARIFF_MAX")) {
-                priceRequest.setClass_id(Integer.toString(CLASS_CD.RTP_T_CL_SECOND.getKey()));
-                classId = Double.parseDouble(priceRequest.getClass_id());
-                try {
-                    PcVoygrClass pcVoygrClass = get_pc_voygr_class(priceRequest.getVoygr_id(),
-                            priceRequest.getPrice_cd(), 4,
-                            priceCode.getPcVrsn());
-                    params[20] = pcVoygrClass.getPcMaxAmtEur() + diabolo_amt_single;
-                } catch (ApiException e) {
-                    e.printStackTrace();
-                }
-            }
-            try {
-                //ex RT_CLASSIC_UPGRADE [ invoke upgrade forumla of retrieved on ]
-                trf_pp_price_eur = Common.invokeForumla(frml_id + "_UPGRADE", E1, DS, params);
-                //on error SAS_TT_FORMULA_ERROR
-            } catch (Exception e) {
-                priceCode.setTrfPpFrmlId("SAS_DBF_TT_FORMULA");
-            }
-        } else {
-            try {
-                //ex RT_CLASSIC_UPGRADE [ invoke upgrade forumla of retrieved on ]
-                trf_pp_price_eur = Common.invokeForumla(frml_id, E1, DS, params);
-                //on error SAS_TT_FORMULA_ERROR
-            } catch (Exception e) {
-                priceCode.setTrfPpFrmlId("SAS_DBF_TT_FORMULA");
-            }
-        }
-        return 0;
+        return trf_pp_price_eur;
     }
 
     private PcVoygrClass get_pc_voygr_class(String voygr_id, String priceCd, int classId, Integer pcVrsn) throws ApiException {
@@ -322,17 +325,16 @@ public class Price_Natr_Id {
         long time = System.currentTimeMillis();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         String dateForm = sdf.format(new java.util.Date(time));
-        java.sql.Date date = null;
+        java.util.Date dt = null;
         try {
-            java.util.Date dt = sdf.parse(dateForm);
-            date = new java.sql.Date(dt.getTime());
+            dt = sdf.parse(dateForm);
         } catch (ParseException e) {
             e.printStackTrace();
         }
 
         Calndr calndr = null;
         try {
-            calndr = calndrRepo.findByCalndrDate(date);
+            calndr = calndrRepo.findByCalndrDate(dateForm);
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -30,7 +30,7 @@ public class Rules {
     private TrackAgendaEventListener trackAgendaEventListener;
     private KieContainer priceCodeContainer, formulaContainer;
 
-    String baseUrl = new File("D:\\rules-springboot-mvc\\src\\main\\resources\\com\\itpaths\\rules").toURI().toASCIIString();
+    String baseUrl = new File("C:\\Users\\rhdmtraining\\Desktop\\rules-springboot-mvc\\src\\main\\resources\\com\\itpaths\\rules").toURI().toASCIIString();
 
     String formulaUrl = baseUrl + "formula.xls";
     String priceCodeUrl = baseUrl + "price_code.xls";

@@ -12,7 +12,6 @@ import com.itpaths.rules.price.util.econst.Constants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -59,7 +58,7 @@ public class PriceService {
 
     public PriceService() {
         for (int i = 0; i < params.length; i++) {
-            params[i] = 0d;
+            params[i] = 1d;
         }
         for (int i = 0; i < E1.length; i++) {
             E1[i] = 0d;
@@ -93,8 +92,7 @@ public class PriceService {
                 for (PriceCode pc : priceCodes) {
                     PriceResult priceResult = new PriceResult();
                     priceCode = pc;
-                    int pNatrId = Integer.parseInt(priceCode.getPriceNatrId());
-                    formula.setPrice_natr_id(Constants.price_cd.get(pNatrId));
+                    formula.setPrice_natr_id(Constants.price_cd.get(priceCode.getPriceNatrId()));
                     //Invoke Rules
                     formula = rules.getMethod(formula);
                     System.out.println("INFO:: Formula Invoked: " + formula.toString());
@@ -102,30 +100,35 @@ public class PriceService {
                     if (formula.getMethod() != null) {
                         if (!formula.getMethod().isEmpty()) {
                             //invoke methods retrieved from the METHOD decision table
+                            frml_id = priceCode.getPriceFrmlId();
                             try {
                                 priceResult = getTktPriceEur(priceRequest, formula, priceResult);
                             } catch (Exception e) {
-                                priceResult.setStatus(e.getMessage());
+                                priceResult.setStatus(priceResult.getStatus() + "; " + e.getMessage());
                             }
                         } else if (formula.getStatus() == null)
-                            formula.setStatus("SAS_PRICE_ERR");
+                            priceResult.setStatus("SAS_PRICE_ERR");
                     } else if (formula.getStatus() == null)
                         priceResult.setStatus("SAS_PRICE_ERR");
 
                     //******* DROOLS : Start Rule 14 "set trf_pp_frml_id if orgnsm_id is filled "*************
-                    if (priceCode.getTrfPpFrmlId() == null && !priceRequest.getOrgnsm_id().isEmpty())
-                        priceCode.setTrfPpFrmlId("RT_CLASSIC_DEBET");
-                    else if (priceCode.getTrfPpFrmlId().isEmpty() && !priceRequest.getOrgnsm_id().isEmpty()) {
-                        priceCode.setTrfPpFrmlId("RT_CLASSIC_DEBET");
+                    if (priceRequest.getOrgnsm_id() != null) {
+                        if (!priceRequest.getOrgnsm_id().isEmpty()) {
+                            if (priceCode.getTrfPpFrmlId() == null)
+                                priceCode.setTrfPpFrmlId("RT_CLASSIC_DEBET");
+                            else if (priceCode.getTrfPpFrmlId().isEmpty())
+                                priceCode.setTrfPpFrmlId("RT_CLASSIC_DEBET");
+                        }
                     }
                     //******* DROOLS : end Rule 14 "price_natr_id unknown"*************
-                    if (!priceCode.getTrfPpFrmlId().isEmpty()) {
-                        List<TtFormula> ttFormula = ttFormulaRepo.findByFrmlId(priceCode.getTrfPpFrmlId());
-                        if (ttFormula.size() == 0)
-                            priceResult.setStatus(priceResult.getStatus() + "; " + "SAS_DBF_TT_FORMULA");
-                        else
-                            frml_id = ttFormula.get(0).getFrmlId();
-                    }
+                    if (priceCode.getTrfPpFrmlId() != null)
+                        if (!priceCode.getTrfPpFrmlId().isEmpty()) {
+                            List<TtFormula> ttFormula = ttFormulaRepo.findByFrmlId(priceCode.getTrfPpFrmlId());
+                            if (ttFormula.size() == 0)
+                                priceResult.setStatus(priceResult.getStatus() + "; " + "SAS_DBF_TT_FORMULA");
+                            else
+                                frml_id = ttFormula.get(0).getFrmlId();
+                        }
 
                     if (priceRequest.getClass_id() != null) {
                         if (!priceRequest.getClass_id().isEmpty()) {
@@ -145,8 +148,9 @@ public class PriceService {
                                     //if error, then throw SAS_TT_FORMULA_ERROR
                                     try {
                                         res1st = invokeForumla(frml_id, E1, DS, params);
-                                    } catch (InvocationTargetException e) {
+                                    } catch (Exception e) {
                                         priceCode.setTrfPpFrmlId("SAS_DBF_TT_FORMULA");
+                                        priceResult.setStatus(priceResult.getStatus() + "; SAS_DBF_TT_FORMULA");
                                     }
 
                                     //calculate price 2nd class
@@ -159,8 +163,9 @@ public class PriceService {
                                     //ex invoke RT_CLASSIC
                                     try {
                                         res2nd = invokeForumla(frml_id, E1, DS, params);
-                                    } catch (InvocationTargetException e) {
+                                    } catch (Exception e) {
                                         priceCode.setTrfPpFrmlId("SAS_DBF_TT_FORMULA");
+                                        priceResult.setStatus(priceResult.getStatus() + "; SAS_DBF_TT_FORMULA");
                                     }
 
                                     //calculate price upgrade
@@ -170,16 +175,18 @@ public class PriceService {
                                     try {
                                         trf_pp_price_eur = invokeForumla(frml_id + "_UPGRADE", E1, DS, params);
                                         priceResult.setTotal_pp_price_eur(trf_pp_price_eur);
-                                    } catch (InvocationTargetException e) {
+                                    } catch (Exception e) {
                                         priceCode.setTrfPpFrmlId("SAS_DBF_TT_FORMULA");
+                                        priceResult.setStatus(priceResult.getStatus() + "; SAS_DBF_TT_FORMULA");
                                     }
                                     //if error, then throw SAS_TT_FORMULA_ERROR
                                 } else {
                                     try {
                                         trf_pp_price_eur = invokeForumla(frml_id, E1, DS, params);
                                         priceResult.setTotal_pp_price_eur(trf_pp_price_eur);
-                                    } catch (InvocationTargetException e) {
+                                    } catch (Exception e) {
                                         priceCode.setTrfPpFrmlId("SAS_TT_FORMULA_ERROR");
+                                        priceResult.setStatus(priceResult.getStatus() + "; SAS_TT_FORMULA_ERROR");
                                     }
                                     //What is the formula, need to be invoked?
                                     //if error, then throw SAS_TT_FORMULA_ERROR
@@ -237,7 +244,7 @@ public class PriceService {
         } else if (formula.getMethod().equalsIgnoreCase("do_classic")) {
             pr = price_natr_id.do_classic(priceRequest);
         }
-        /*} catch (InvocationTargetException | IllegalAccessException | NoSuchMethodException e) {
+        /*} catch (Exception | IllegalAccessException | NoSuchMethodException e) {
             e.printStackTrace();
         }*/
         return pr;
