@@ -81,6 +81,7 @@ public class Price_Natr_Id {
         get_params(priceRequest);
         if (priceCode.getPriceFrmlId().isEmpty())
             priceCode.setPriceFrmlId("RT_CLASSIC");
+        frml_id = priceCode.getPriceFrmlId();
         try {
             trf_pp_price_eur = Common.invokeForumla(frml_id, E1, DS, params);
         } catch (Exception e) {
