@@ -1,19 +1,9 @@
-package com.itpaths.rules.price.serice;
+package com.itpaths.rules.price.service;
 
-import com.itpaths.rules.price.dao.model.PcFtktPrice;
-import com.itpaths.rules.price.dao.model.PcLimit;
-import com.itpaths.rules.price.dao.model.PcVoygrClass;
-import com.itpaths.rules.price.dao.model.TktPrmtr;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.stereotype.Service;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
 @Service
 public class DataRetrievalService {

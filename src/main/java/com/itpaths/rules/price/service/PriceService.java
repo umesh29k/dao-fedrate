@@ -1,4 +1,4 @@
-package com.itpaths.rules.price.serice;
+package com.itpaths.rules.price.service;
 
 import com.itpaths.rules.price.api.Rules;
 import com.itpaths.rules.price.dao.model.*;
@@ -12,11 +12,8 @@ import com.itpaths.rules.price.util.econst.Constants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static com.itpaths.rules.price.util.Common.invokeForumla;
 
@@ -24,6 +21,8 @@ import static com.itpaths.rules.price.util.Common.invokeForumla;
 public class PriceService {
     @Autowired
     private Rules rules;
+    @Autowired
+    private StationsDistancesRepository stationsDistancesRepo;
     @Autowired
     private DataRetrievalService dataRetrievalService;
     @Autowired
@@ -58,7 +57,7 @@ public class PriceService {
 
     public PriceService() {
         for (int i = 0; i < params.length; i++) {
-            params[i] = 1d;
+            params[i] = 0d;
         }
         for (int i = 0; i < E1.length; i++) {
             E1[i] = 0d;
@@ -89,9 +88,9 @@ public class PriceService {
             if (!priceRequest.getPrice_cd().isEmpty()) {
                 //get data from price_code for the given id
                 List<PriceCode> priceCodes = priceCodeRepo.findByPriceCd(priceRequest.getPrice_cd());
-                for (PriceCode pc : priceCodes) {
+                //for (PriceCode pc : priceCodes) {
                     PriceResult priceResult = new PriceResult();
-                    priceCode = pc;
+                    priceCode = priceCodes.get(0);
                     formula.setPrice_natr_id(Constants.price_cd.get(priceCode.getPriceNatrId()));
                     //Invoke Rules
                     formula = rules.getMethod(formula);
@@ -205,7 +204,7 @@ public class PriceService {
                     else if (trf_pp_price_eur < 0)
                         priceResult.setStatus(priceResult.getStatus() + "; trf_pp_price_eur_status: SAS_PRICE_ERR");
                     priceResults.add(priceResult);
-                }
+                //}
             }
         }
         return priceResults;
@@ -220,7 +219,7 @@ public class PriceService {
         //sumInstanceMethod = Price_Natr_Id.class.getMethod(formula.getMethod(), PriceRequest.class);
         Price_Natr_Id price_natr_id = new Price_Natr_Id(priceCodeRepo, tktPrmtrRepo,
                 pcVoygrRepo, pcVoygrClassRepo, cityNetSupplmntRepo, orgnsmRepo, calndrRepo, pcLimitRepo, pcFtktPriceRepo, ttFormulaRepo,
-                E1, DS, params, priceCode, formula);
+                E1, DS, params, priceCode, formula, stationsDistancesRepo);
         //result
         //  = (Double) sumInstanceMethod.invoke(price_natr_id, priceRequest);
         if (formula.getMethod().equalsIgnoreCase("do_classic")) {

@@ -6,7 +6,7 @@ import com.itpaths.rules.price.exception.ApiException;
 import com.itpaths.rules.price.model.PriceRequest;
 import com.itpaths.rules.price.model.PriceResult;
 import com.itpaths.rules.price.model.dto.Formula;
-import com.itpaths.rules.price.serice.DataRetrievalService;
+import com.itpaths.rules.price.service.DataRetrievalService;
 import com.itpaths.rules.price.util.econst.CLASS_CD;
 
 import java.text.ParseException;
@@ -29,7 +29,7 @@ public class Price_Natr_Id {
     private PcLimitRepository pcLimitRepo;
     private PcFtktPriceRepository pcFtktPriceRepo;
     private TtFormulaRepository ttFormulaRepo;
-
+    private StationsDistancesRepository stationsDistancesRepo;
     private Double qty;
     private String frml_id = null;
     private double classId;
@@ -52,7 +52,8 @@ public class Price_Natr_Id {
 
     public Price_Natr_Id(PriceCodeRepository priceCodeRepo, TktPrmtrRepository tktPrmtrRepo,
                          PcVoygrRepository pcVoygrRepo, PcVoygrClassRepository pcVoygrClassRepo, CityNetSupplmntRepository cityNetSupplmntRepo, OrgnsmRepository orgnsmRepo, CalndrRepository calndrRepo, PcLimitRepository pcLimitRepo, PcFtktPriceRepository pcFtktPriceRepo, TtFormulaRepository ttFormulaRepo,
-                         Double[] E1, Double[] DS, Double[] params, PriceCode priceCode, Formula formula) {
+                         Double[] E1, Double[] DS, Double[] params, PriceCode priceCode, Formula formula, StationsDistancesRepository stationsDistancesRepo
+    ) {
         this.priceCodeRepo = priceCodeRepo;
         this.tktPrmtrRepo = tktPrmtrRepo;
         this.pcVoygrRepo = pcVoygrRepo;
@@ -68,12 +69,13 @@ public class Price_Natr_Id {
         this.params = params;
         this.priceCode = priceCode;
         this.formula = formula;
+        this.stationsDistancesRepo = stationsDistancesRepo;
     }
 
     public PriceResult do_classic(PriceRequest priceRequest) {
         PriceResult pr = new PriceResult();
         try {
-            get_distances(priceRequest);
+            params[30] = get_distances(priceRequest);
         } catch (ApiException e) {
             formula.setStatus(e.getMsg());
             e.printStackTrace();
@@ -343,20 +345,177 @@ public class Price_Natr_Id {
             if (calndr.getCalndrHoliday().equalsIgnoreCase("Y"))
                 params[29] = 1.0;
         }
-        if (sdf_cal_tkt_dstnc().get("departure-destination distance") != null)
-            params[30] = sdf_cal_tkt_dstnc().get("departure-destination distance");
-        if (sdf_cal_tkt_dstnc().get("departure-via distance") != null)
-            params[31] = sdf_cal_tkt_dstnc().get("departure-via distance");
-        if (sdf_cal_tkt_dstnc().get("via-destination distance") != null)
-            params[32] = sdf_cal_tkt_dstnc().get("via-destination distance");
-        if (sdf_cal_tkt_dstnc().get("alternative-departure distance") != null)
-            params[33] = sdf_cal_tkt_dstnc().get("alternative-departure distance");
+        if (sdf_cal_tkt_dstnc(priceRequest).get("departure-destination distance") != null)
+            params[30] = sdf_cal_tkt_dstnc(priceRequest).get("departure-destination distance");
+        if (sdf_cal_tkt_dstnc(priceRequest).get("departure-via distance") != null)
+            params[31] = sdf_cal_tkt_dstnc(priceRequest).get("departure-via distance");
+        if (sdf_cal_tkt_dstnc(priceRequest).get("via-destination distance") != null)
+            params[32] = sdf_cal_tkt_dstnc(priceRequest).get("via-destination distance");
+        if (sdf_cal_tkt_dstnc(priceRequest).get("alternative-departure distance") != null)
+            params[33] = sdf_cal_tkt_dstnc(priceRequest).get("alternative-departure distance");
         params[35] = Double.parseDouble(priceRequest.getClass_id());
         params[36] = (double) diabolo_amt_single;
     }
 
-    private Map<String, Double> sdf_cal_tkt_dstnc() {
+    private Map<String, Double> sdf_cal_tkt_dstnc(PriceRequest priceRequest) {
         Map<String, Double> map = new HashMap<>();
+        //tstatn_inter_dstnc from table tstatn_dstnc with dstnc_from_tstatn_id < dstnc_to_tstatn_id
+
+        if(priceRequest.getDprtr_tstatn() == null)
+            priceRequest.setDprtr_tstatn("");
+        /**
+         * // start implementation WIDO-260
+         *     IF departure-destination distance = 0 THEN
+         *         Set departure-destination distance =
+         *                 tstatn_inter_dstnc from table tstatn_dstnc with dstnc_from_tstatn_id < dstnc_to_tstatn_id
+         *                 using dprtr_tstatn and dstntn_tstatn
+         *         IF not found THEN return error SAS_DSTNC_NOTFOUND
+         *     ENDIF
+         *     IF via station filled THEN
+         *         IF departure-via distance = 0 THEN
+         *             Set departure-via distance =
+         *                     tstatn_inter_dstnc from table tstatn_dstnc with dstnc_from_tstatn_id < dstnc_to_tstatn_id
+         *                     using dprtr_tstatn and via_tstatn
+         *             IF not found THEN return error SAS_DSTNC_NOTFOUND
+         *         ENDIF
+         *         IF via-destination distance = 0 THEN
+         *             Set via-destination distance =
+         *                     tstatn_inter_dstnc from table tstatn_dstnc with dstnc_from_tstatn_id < dstnc_to_tstatn_id
+         *                     using dstntn_tstatn and via_tstatn
+         *             IF not found THEN return error SAS_DSTNC_NOTFOUND
+         *         ENDIF
+         *     ENDIF
+         *     IF alternative station filled THEN
+         *         IF alternative-departure distance = 0 THEN
+         *             Set alternative-departure distance =
+         *                     tstatn_inter_dstnc from table tstatn_dstnc with dstnc_from_tstatn_id < dstnc_to_tstatn_id
+         *                     using dprtr_tstatn and altrnv_tstatn
+         *             IF not found THEN return error SAS_DSTNC_NOTFOUND
+         *         ENDIF
+         *     ENDIF
+         *     // end implementation WIDO-260
+         *
+         *     // start implementation WIDO-263
+         *     IF via station filled THEN
+         *         Set actual distance 1 = 0
+         *         Set actual distance 2 = 0
+         *
+         *         /* Step 1
+         *         Get formula RT_VIA_DSTNC from table tt_formula (field frml_strng)
+         *         IF not found then return error SAS_DBF_TT_FORMULA
+         *         Set parameter 1 of parameter array = departure-via distance
+         *         Set parameter 2 of parameter array = via-destination distance
+         *         Set parameter 3 of parameter array = departure-destination distance
+         *         Set parameter 4 of parameter array = pc_max_dstnc_taxbl of price_code
+         *         Execute formula using formula parser (parameter array as input) => giving result
+         *         IF error in formula then return error SAS_TT_FORMULA_ERROR
+         *
+         *         /* Step 2
+         *         Set actual distance 1 = result
+         *         === Start of cobol routine sdf_cal_tkt_tax_dstnc // start implementation WIDO-262
+         *                 with distance = actual distance 1
+         *                 pc_max_dstnc_taxbl = pc_max_dstnc_taxbl of price_code * 2 ===
+         *         === IN: distance,pc_max_dstnc_taxbl, pc_min_dstnc_taxbl of price_code
+         *         IF distance > pc_max_dstnc_taxbl THEN
+         *             Set actual distance = pc_max_dstnc_taxbl
+         *         ENDIF
+         *         IF distance < pc_min_dstnc_taxbl THEN
+         *             Set actual distance = pc_min_dstnc_taxbl
+         *         ENDIF
+         *         Get tkt_cdb_frml_id from table tkt_c_d_brkpnt
+         *                 with tp_vrsn of entry of tkt_prmtr based on traveldate
+         *                 and tkt_cdb_dstnc >= actual distance
+         *         Get formula tkt_cdb_frml_id of table tkt_c_d_brkpnt from table tt_formula (field frml_strng)
+         *         IF not found then return error SAS_DBF_TT_FORMULA
+         *         Set parameter 1 of parameter array = actual distance
+         *         Execute formula using formula parser (parameter array as input) => giving result
+         *         IF error in formula then return error SAS_TT_FORMULA_ERROR
+         *         taxable distance = result
+         *         === End of cobol routine sdf_cal_tkt_tax_dstnc === // end implementation WIDO-262
+         *         Returns taxable distance
+         *
+         *         /* Step 3
+         *         Get formula RT_VIA_DSTNC_KAV from table tt_formula (field frml_strng)
+         *         IF not found then return error SAS_DBF_TT_FORMULA
+         *         Set parameter 1 of parameter array = departure-via distance
+         *         Set parameter 2 of parameter array = via-destination distance
+         *         Set parameter 3 of parameter array = departure-destination distance
+         *         Set parameter 4 of parameter array = pc_max_dstnc_taxbl of price_code
+         *         IF error in formula then return error SAS_TT_FORMULA_ERROR
+         *         IF error in formula then return error SAS_DBF_TT_FORMULA
+         *         IF result >= 0 THEN
+         *             IF departure-via distance > pc_max_dstnc_taxbl of price_code THEN
+         *                 Set actual distance 1 = pc_max_dstnc_taxbl
+         *             ELSE
+         *                 Set actual distance 1 = departure-via distance
+         *             ENDIF
+         *         ENDIF
+         *
+         *         /* Step 4
+         *         Get formula RT_VIA_DSTNC from table tt_formula (field frml_strng)
+         *         IF not found then return error SAS_DBF_TT_FORMULA
+         *         Set parameter 1 of parameter array = via-destination distance
+         *         Set parameter 2 of parameter array = departure-via distance
+         *         Set parameter 3 of parameter array = departure-destination distance
+         *         Set parameter 4 of parameter array = pc_max_dstnc_taxbl of price_code
+         *         Execute formula using formula parser (parameter array as input) => giving result
+         *         IF error in formula then return error SAS_TT_FORMULA_ERROR
+         *
+         *         /* Step 5
+         *         Set actual distance 2 = result
+         *         CALL cobol routine sdf_cal_tkt_tax_dstnc (see higher) th distance = actual distance 2
+         *         Returns taxable distance via_kav
+         *
+         *         /* Step 6
+         *         Get formula RT_VIA_DSTNC_KAV from table tt_formula (field frml_strng)
+         *         IF not found then return error SAS_DBF_TT_FORMULA
+         *         Set parameter 1 of parameter array = via-destination distance
+         *         Set parameter 2 of parameter array = departure-via distance
+         *         Set parameter 3 of parameter array = departure-destination distance
+         *         Set parameter 4 of parameter array = pc_max_dstnc_taxbl of price_code
+         *         Execute formula using formula parser (parameter array as input) => giving result
+         *         IF error in formula then return error SAS_TT_FORMULA_ERROR
+         *         IF result >= 0 THEN
+         *             IF via-destination distance > pc_max_dstnc_taxbl of price_code THEN
+         *                 Set actual distance 2 = pc_max_dstnc_taxbl
+         *             ELSE
+         *                 IF via-destination distance > actual distance 2 THEN
+         *                     Set actual distance 2 = via-destination distance
+         *                 ENDIF
+         *             ENDIF
+         *         ENDIF
+         *
+         *         /* Step 6
+         *         IF actual distance 2 > actual distance 1 THEN
+         *             Set actual distance = actual distance 2
+         *         ELSE
+         *             Set actual distance = actual distance 1
+         *         ENDIF
+         *         CALL cobol routine sdf_cal_tkt_tax_dstnc (see higher) with distance = actual distance
+         *         Returns taxable distance in via_kav
+         *     ELSE IF alternative station filled THEN
+         *         IF price_natr_id of price_code = RTP_T_PN_ZONE or RTP_T_PN_ZONE_PLUS THEN
+         *             IF departure-destination distance > alternative-departure distance THEN
+         *                 Set actual distance = departure-destination distance
+         *                 CALL cobol routine sdf_cal_tkt_tax_dstnc (see higher) with distance = actual distance
+         *                 Returns taxable distance
+         *             ELSE
+         *                 Set actual distance = alternative-destination distance
+         *                 CALL cobol routine sdf_cal_tkt_tax_dstnc (see higher) with distance = actual distance
+         *                 Returns taxable distance
+         *             ENDIF
+         *         ELSE IF price_natr_id of price_code = RTP_T_PN_MTARIFF,RTP_T_PN_MTARIFF_PLUS or RTP_T_PN_MTARIFF_MAX THEN
+         *             Set actual distance =
+         *                 ((departure-destination distance + alternative-destination distance) / 2) + 0.5
+         *             CALL cobol routine sdf_cal_tkt_tax_dstnc (see higher) with distance = actual distance
+         *             Returns taxable distance
+         *         ENDIF
+         *     ELSE
+         *         CALL cobol routine sdf_cal_tkt_tax_dstnc (see higher) using departure-destination distance
+         *         Returns taxable distance
+         *         Set actual distance = departure-destination distance
+         *     ENDIF
+         */
         return map;
     }
 
@@ -367,13 +526,16 @@ public class Price_Natr_Id {
          * and
          * taxable distance
          */
+        StationsDistances stationsDistance = stationsDistancesRepo.findByDstncFromTstatnIdAndDstncToTstatnId(priceRequest.getDprtr_tstatn(), priceRequest.getDstntn_tstatn());
         double distance = 0;
-        if (!priceRequest.getDprtr_tstatn().isEmpty() && !priceRequest.getDstntn_tstatn().isEmpty()) {
+        if (stationsDistance != null)
+            distance = Double.parseDouble(stationsDistance.getTstatnInterDstnc());
+        /*if (!priceRequest.getDprtr_tstatn().isEmpty() && !priceRequest.getDstntn_tstatn().isEmpty()) {
             sdf_cal_tkt_dstnc();
             if (distance > priceCode.getPcMaxDstncJrney()
                     || distance < priceCode.getPcMinDstncJrney())
                 throw new ApiException("SAS_PC_DSTNC_INV");
-        }
+        }*/
         return distance;
     }
 

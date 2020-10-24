@@ -1,0 +1,9 @@
+<server>
+    <id>azure-auth</id>
+    <configuration>
+        <client>xxxx</client>
+        <tenant>xxxx</tenant>
+        <key>PKCS12</key>
+        <environment>AZURE</environment>
+    </configuration>
+</server>

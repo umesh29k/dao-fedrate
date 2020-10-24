@@ -3,7 +3,7 @@ package com.itpaths.rules.price.controller;
 import com.itpaths.rules.price.exception.ApiException;
 import com.itpaths.rules.price.model.PriceResult;
 import com.itpaths.rules.price.model.PriceRequest;
-import com.itpaths.rules.price.serice.PriceService;
+import com.itpaths.rules.price.service.PriceService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
