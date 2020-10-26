@@ -104,6 +104,7 @@ public class PriceService {
                                 priceResult = getTktPriceEur(priceRequest, formula, priceResult);
                             } catch (Exception e) {
                                 priceResult.setStatus(priceResult.getStatus() + "; " + e.getMessage());
+                                e.printStackTrace();
                             }
                         } else if (formula.getStatus() == null)
                             priceResult.setStatus("SAS_PRICE_ERR");

@@ -257,8 +257,8 @@ public class Price_Natr_Id {
     private void get_params(PriceRequest priceRequest) {
         tktPrmtr = tktPrmtrRepo.find();
         params[1] = tktPrmtr.getTpNormFxdChargeEur();
-        //if (sdf_cal_tkt_dstnc(priceRequest).get("taxable_distance") != null)
-            //params[2] = sdf_cal_tkt_dstnc(priceRequest).get("taxable_distance"); //return taxable_distance
+        if (sdf_cal_tkt_dstnc(priceRequest).get("taxable_distance") != null)
+            params[2] = sdf_cal_tkt_dstnc(priceRequest).get("taxable_distance"); //return taxable_distance
         params[5] = tktPrmtr.getTpNormUnitPriceEur();
         params[7] = tktPrmtr.getTpNrdctnFxdChargeEur();
 
@@ -278,8 +278,8 @@ public class Price_Natr_Id {
             params[13] = tktPrmtr.getTpNormMinPriceClass2Eur();
         }
         double via_kav = 0;
-        //if (sdf_cal_tkt_dstnc(priceRequest).get("via_kav") != null)
-          //  via_kav = sdf_cal_tkt_dstnc(priceRequest).get("via_kav"); //returns via_kav
+        if (sdf_cal_tkt_dstnc(priceRequest).get("via_kav") != null)
+            via_kav = sdf_cal_tkt_dstnc(priceRequest).get("via_kav"); //returns via_kav
         params[14] = via_kav;
         if (via_kav == 0)
             params[19] = 0.0;
@@ -345,9 +345,9 @@ public class Price_Natr_Id {
             if (calndr.getCalndrHoliday().equalsIgnoreCase("Y"))
                 params[29] = 1.0;
         }
-        /*if (sdf_cal_tkt_dstnc(priceRequest).get("departure-destination distance") != null)
-            params[30] = sdf_cal_tkt_dstnc(priceRequest).get("departure-destination distance");
-        if (sdf_cal_tkt_dstnc(priceRequest).get("departure-via distance") != null)
+        if (sdf_cal_tkt_dstnc(priceRequest).get("departure_destination_distance") != null)
+            params[30] = sdf_cal_tkt_dstnc(priceRequest).get("departure_destination_distance");
+        /*if (sdf_cal_tkt_dstnc(priceRequest).get("departure-via distance") != null)
             params[31] = sdf_cal_tkt_dstnc(priceRequest).get("departure-via distance");
         if (sdf_cal_tkt_dstnc(priceRequest).get("via-destination distance") != null)
             params[32] = sdf_cal_tkt_dstnc(priceRequest).get("via-destination distance");
@@ -357,40 +357,45 @@ public class Price_Natr_Id {
         params[36] = (double) diabolo_amt_single;
     }
 
-    private double sdf_cal_tkt_dstnc(PriceRequest priceRequest) {
+    private Map<String, Double> sdf_cal_tkt_dstnc(PriceRequest priceRequest) {
         Map<String, Double> map = new HashMap<>();
-        //tstatn_inter_dstnc from table tstatn_dstnc with dstnc_from_tstatn_id < dstnc_to_tstatn_id
-
-        //departure-via distance
-
         StationsDistances stationsDistance = null;
         double distance = 0;
-        if (stationsDistance != null)
-            distance = Double.parseDouble(stationsDistance.getTstatnInterDstnc());
+        double actual_distance_1 = 0, actual_distance_2 = 0;
 
-        if (priceRequest.getDprtr_tstatn() == null) {
-            stationsDistance = stationsDistancesRepo.findByDstncFromTstatnIdAndDstncToTstatnId(priceRequest.getDprtr_tstatn(), priceRequest.getDstntn_tstatn());
-            if (stationsDistance != null)
-                priceRequest.setDprtr_tstatn(stationsDistance.getTstatnInterDstnc());
-            else
-                priceRequest.setDprtr_tstatn("SAS_DSTNC_NOTFOUND");
-        }
-        if(priceRequest.getVia_tstatn() != null){
-            if(!priceRequest.getVia_tstatn().isEmpty()){
-                if(priceRequest.getDurtn_id()!=null)
-                    if(!priceRequest.getDurtn_id().isEmpty()){
-                        //Set departure-via distance =
-                        //         *                     tstatn_inter_dstnc from table tstatn_dstnc with dstnc_from_tstatn_id < dstnc_to_tstatn_id
-                        //         *                     using dprtr_tstatn and via_tstatn
-                        //         *             IF not found THEN return error SAS_DSTNC_NOTFOUND
-                    }
-            }
-            else{
+        stationsDistance = stationsDistancesRepo.findByDstncFromTstatnIdAndDstncToTstatnId(priceRequest.getDprtr_tstatn(), priceRequest.getDstntn_tstatn());
 
-            }
+        if (stationsDistance != null) {
+            distance = Integer.parseInt(stationsDistance.getTstatnInterDstnc());
+            map.put("departure_destination_distance", distance);
         }
-        else{}
-        return distance;
+        else{
+            map.put("SAS_DSTNC_NOTFOUND", 0d);
+        }
+
+        return map;
+    }
+
+    public Double sdf_cal_tkt_tax_dstnc(){
+        double distance = 0;
+        double actual_distance_1 = 0, actual_distance_2 = 0;
+        double result = 0;
+        if(distance > priceCode.getPcMaxDstncTaxbl())
+                distance = priceCode.getPcMaxDstncTaxbl();
+        else if(distance<priceCode.getPcMinDstncTaxbl())
+            distance = priceCode.getPcMinDstncTaxbl();
+
+        /*Get tkt_cdb_frml_id from table tkt_c_d_brkpnt
+        with tp_vrsn of entry of tkt_prmtr based on traveldate
+        and tkt_cdb_dstnc >= actual distance
+        Get formula tkt_cdb_frml_id of table tkt_c_d_brkpnt from table tt_formula (field frml_strng)
+        IF not found then return error SAS_DBF_TT_FORMULA
+        Set parameter 1 of parameter array = actual distance
+        Execute formula using formula parser (parameter array as input) => giving result
+        IF error in formula then return error SAS_TT_FORMULA_ERROR
+        taxable distance = result
+        */
+        return result;
     }
 
     private double get_distances(PriceRequest priceRequest) throws ApiException {
@@ -402,10 +407,10 @@ public class Price_Natr_Id {
          */
         double distance = 0;
         if (!priceRequest.getDprtr_tstatn().isEmpty() && !priceRequest.getDstntn_tstatn().isEmpty()) {
-            distance = sdf_cal_tkt_dstnc(priceRequest);
-            if (distance > priceCode.getPcMaxDstncJrney()
-                    || distance < priceCode.getPcMinDstncJrney())
-                throw new ApiException("SAS_PC_DSTNC_INV");
+            distance = sdf_cal_tkt_dstnc(priceRequest).get("taxable_distance");
+            //if (distance > priceCode.getPcMaxDstncJrney()
+            //       || distance < priceCode.getPcMinDstncJrney())
+            //throw new ApiException("SAS_PC_DSTNC_INV");
         }
         return distance;
     }
@@ -585,14 +590,3 @@ public class Price_Natr_Id {
         return pr;
     }
 }
-
-
-
-
-
-
-
-
-
-
-
