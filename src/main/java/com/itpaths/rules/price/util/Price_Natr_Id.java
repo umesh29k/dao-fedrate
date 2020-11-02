@@ -48,11 +48,16 @@ public class Price_Natr_Id {
     private Double[] E1;
     private Double[] DS;
     private Double[] params;
+    private double taxableDistance;
+    private TktCDBrkpntRepository tktCDBrkntRepo;
+    Map<String, Double> map;
+
     //private PriceResult priceResult;
 
     public Price_Natr_Id(PriceCodeRepository priceCodeRepo, TktPrmtrRepository tktPrmtrRepo,
                          PcVoygrRepository pcVoygrRepo, PcVoygrClassRepository pcVoygrClassRepo, CityNetSupplmntRepository cityNetSupplmntRepo, OrgnsmRepository orgnsmRepo, CalndrRepository calndrRepo, PcLimitRepository pcLimitRepo, PcFtktPriceRepository pcFtktPriceRepo, TtFormulaRepository ttFormulaRepo,
-                         Double[] E1, Double[] DS, Double[] params, PriceCode priceCode, Formula formula, StationsDistancesRepository stationsDistancesRepo
+                         Double[] E1, Double[] DS, Double[] params, PriceCode priceCode, Formula formula, StationsDistancesRepository stationsDistancesRepo,
+                         TktCDBrkpntRepository tktCDBrkntRepo
     ) {
         this.priceCodeRepo = priceCodeRepo;
         this.tktPrmtrRepo = tktPrmtrRepo;
@@ -64,12 +69,14 @@ public class Price_Natr_Id {
         this.pcLimitRepo = pcLimitRepo;
         this.pcFtktPriceRepo = pcFtktPriceRepo;
         this.ttFormulaRepo = ttFormulaRepo;
+        this.tktCDBrkntRepo = tktCDBrkntRepo;
         this.E1 = E1;
         this.DS = DS;
         this.params = params;
         this.priceCode = priceCode;
         this.formula = formula;
         this.stationsDistancesRepo = stationsDistancesRepo;
+        map = new HashMap<>();
     }
 
     public PriceResult do_classic(PriceRequest priceRequest) {
@@ -245,10 +252,8 @@ public class Price_Natr_Id {
     private PcVoygrClass get_pc_voygr_class(String voygr_id, String priceCd, int classId, Integer pcVrsn) throws ApiException {
         String classIdStr = class_id.get(classId);
         List<PcVoygrClass> pcVoygrClass = pcVoygrClassRepo.findByPriceCdAndVoygrIdAndPcVrsnAndClassId(priceCd, voygr_id, pcVrsn, classIdStr);
-        if (pcVoygrClass.size() == 0) {
-            pcVoygrClass = pcVoygrClassRepo.findByPriceCdAndVoygrIdAndPcVrsnAndClassId(voygr_id,
-                    priceCd, pcVrsn, "RTP_T_CL_IRRELEVANT");
-        }
+        pcVoygrClass = pcVoygrClassRepo.findByPriceCdAndVoygrIdAndPcVrsnAndClassId(voygr_id,
+                priceCd, pcVrsn, "RTP_T_CL_IRRELEVANT");
         if (pcVoygrClass.size() == 0)
             throw new ApiException("SAS_VOYGR_CLASS_INV");
         return pcVoygrClass.get(0);
@@ -257,8 +262,6 @@ public class Price_Natr_Id {
     private void get_params(PriceRequest priceRequest) {
         tktPrmtr = tktPrmtrRepo.find();
         params[1] = tktPrmtr.getTpNormFxdChargeEur();
-        if (sdf_cal_tkt_dstnc(priceRequest).get("taxable_distance") != null)
-            params[2] = sdf_cal_tkt_dstnc(priceRequest).get("taxable_distance"); //return taxable_distance
         params[5] = tktPrmtr.getTpNormUnitPriceEur();
         params[7] = tktPrmtr.getTpNrdctnFxdChargeEur();
 
@@ -345,8 +348,10 @@ public class Price_Natr_Id {
             if (calndr.getCalndrHoliday().equalsIgnoreCase("Y"))
                 params[29] = 1.0;
         }
-        if (sdf_cal_tkt_dstnc(priceRequest).get("departure_destination_distance") != null)
-            params[30] = sdf_cal_tkt_dstnc(priceRequest).get("departure_destination_distance");
+        if (map.get("taxable_distance") != null)
+            params[2] = map.get("taxable_distance");
+        if (map.get("departure_destination_distance") != null)
+            params[30] = map.get("departure_destination_distance");
         /*if (sdf_cal_tkt_dstnc(priceRequest).get("departure-via distance") != null)
             params[31] = sdf_cal_tkt_dstnc(priceRequest).get("departure-via distance");
         if (sdf_cal_tkt_dstnc(priceRequest).get("via-destination distance") != null)
@@ -358,31 +363,50 @@ public class Price_Natr_Id {
     }
 
     private Map<String, Double> sdf_cal_tkt_dstnc(PriceRequest priceRequest) {
-        Map<String, Double> map = new HashMap<>();
         StationsDistances stationsDistance = null;
-        double distance = 0;
+        Integer distance = 0;
         double actual_distance_1 = 0, actual_distance_2 = 0;
 
         stationsDistance = stationsDistancesRepo.findByDstncFromTstatnIdAndDstncToTstatnId(priceRequest.getDprtr_tstatn(), priceRequest.getDstntn_tstatn());
 
         if (stationsDistance != null) {
             distance = Integer.parseInt(stationsDistance.getTstatnInterDstnc());
-            map.put("departure_destination_distance", distance);
-        }
-        else{
+            map.put("departure_destination_distance", distance.doubleValue());
+        } else {
             map.put("SAS_DSTNC_NOTFOUND", 0d);
         }
 
+        taxableDistance = 0;
+        double pc_max_dstnc_taxbl = priceCode.getPcMaxDstncTaxbl() * 2;
+        double pc_min_dstnc_taxbl = priceCode.getPcMinDstncTaxbl();
+        if (distance > pc_max_dstnc_taxbl)
+            distance = (int) pc_max_dstnc_taxbl;
+        if (distance < pc_min_dstnc_taxbl)
+            distance = (int) pc_min_dstnc_taxbl;
+        List<TktCDBrkpnt> tktCDBrkpnts = tktCDBrkntRepo.findByTktCdbSeqNoAndTpVrsn(distance, priceCode.getPcVrsn());
+        TktCDBrkpnt tktCDBrkpnt = new TktCDBrkpnt();
+        if (tktCDBrkpnts != null)
+            if (tktCDBrkpnts.size() > 0)
+                tktCDBrkpnts.get(0);
+        params[0] = distance.doubleValue();
+        try {
+            taxableDistance = Common.invokeForumla(tktCDBrkpnt.getTktCdbFrmlId() + "_" + priceCode.getOperId(), E1, DS, params);
+            //on error SAS_TT_FORMULA_ERROR
+        } catch (Exception e) {
+            priceCode.setTrfPpFrmlId("SAS_DBF_TT_FORMULA");
+        }
+        map.put("taxable_distance", taxableDistance);
+        map.put("distance", distance.doubleValue());
         return map;
     }
 
-    public Double sdf_cal_tkt_tax_dstnc(){
+    public Double sdf_cal_tkt_tax_dstnc() {
         double distance = 0;
         double actual_distance_1 = 0, actual_distance_2 = 0;
         double result = 0;
-        if(distance > priceCode.getPcMaxDstncTaxbl())
-                distance = priceCode.getPcMaxDstncTaxbl();
-        else if(distance<priceCode.getPcMinDstncTaxbl())
+        if (distance > priceCode.getPcMaxDstncTaxbl())
+            distance = priceCode.getPcMaxDstncTaxbl();
+        else if (distance < priceCode.getPcMinDstncTaxbl())
             distance = priceCode.getPcMinDstncTaxbl();
 
         /*Get tkt_cdb_frml_id from table tkt_c_d_brkpnt
@@ -515,21 +539,31 @@ public class Price_Natr_Id {
         PcFtktPrice pcFtktPrice = pcFtktPriceRepo.findByPriceCdAndPcVrsnAndClassId(priceRequest.getPrice_cd(),
                 priceCode.getPcVrsn(),
                 priceRequest.getClass_id());
-        if (tktTypeID.get(priceRequest.getTkt_type_id()).equalsIgnoreCase("RTP_T_TT_FIXED")
-                || tktTypeID.get(priceRequest.getTkt_type_id()).equalsIgnoreCase("RTP_T_TT_AGLOCARD")) {
+        boolean tktTypeForPrm20 = false;
+        if (!priceRequest.getTkt_type_id().isEmpty())
+            if (tktTypeID.get(priceRequest.getTkt_type_id()).equalsIgnoreCase("RTP_T_TT_FIXED")
+                    || tktTypeID.get(priceRequest.getTkt_type_id()).equalsIgnoreCase("RTP_T_TT_AGLOCARD")) {
+                tktTypeForPrm20 = true;
+            }
+        if (tktTypeForPrm20)
             params[20] = pcFtktPrice.getFtktPriceEur() + diabolo_amt_single;
-        } else {
+        else {
             String voyarId = priceRequest.getVoygr_id();
             try {
                 get_pc_voygr_class(voyarId, priceRequest.getPrice_cd(), 4, priceCode.getPcVrsn());
             } catch (ApiException e) {
                 e.printStackTrace();
             }
-            pcVoygrClassRepo.findByPriceCdAndVoygrIdAndPcVrsnAndClassId(
+            List<PcVoygrClass> pcVoygrClasses = pcVoygrClassRepo.findByPriceCdAndVoygrIdAndPcVrsnAndClassId(
                     priceRequest.getPrice_cd(),
                     priceRequest.getVoygr_id(), priceCode.getPcVrsn(),
-                    priceRequest.getClass_id()).get(0);
-            params[20] = pcVoygrClass.getPcDfltAmtEur() + diabolo_amt_single;
+                    priceRequest.getClass_id());
+            if (pcVoygrClasses.size() > 0)
+                pcVoygrClass = pcVoygrClasses.get(0);
+            if (pcVoygrClass != null)
+                params[20] = pcVoygrClass.getPcDfltAmtEur() + diabolo_amt_single;
+            else
+                params[20] = diabolo_amt_single;
         }
 
         if (priceCode.getPriceFrmlId().isEmpty() || priceCode.getPriceFrmlId().equalsIgnoreCase("RT_CLASSIC")) {

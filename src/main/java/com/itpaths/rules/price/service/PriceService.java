@@ -45,7 +45,8 @@ public class PriceService {
     private PcLimitRepository pcLimitRepo;
     @Autowired
     private PcFtktPriceRepository pcFtktPriceRepo;
-
+    @Autowired
+    private TktCDBrkpntRepository tktCDBrkntRepo;
     private Double tkt_price_eur = 0d;
     private Double[] params = new Double[37];
     private Double[] E1 = new Double[2];
@@ -220,7 +221,7 @@ public class PriceService {
         //sumInstanceMethod = Price_Natr_Id.class.getMethod(formula.getMethod(), PriceRequest.class);
         Price_Natr_Id price_natr_id = new Price_Natr_Id(priceCodeRepo, tktPrmtrRepo,
                 pcVoygrRepo, pcVoygrClassRepo, cityNetSupplmntRepo, orgnsmRepo, calndrRepo, pcLimitRepo, pcFtktPriceRepo, ttFormulaRepo,
-                E1, DS, params, priceCode, formula, stationsDistancesRepo);
+                E1, DS, params, priceCode, formula, stationsDistancesRepo, tktCDBrkntRepo);
         //result
         //  = (Double) sumInstanceMethod.invoke(price_natr_id, priceRequest);
         if (formula.getMethod().equalsIgnoreCase("do_classic")) {

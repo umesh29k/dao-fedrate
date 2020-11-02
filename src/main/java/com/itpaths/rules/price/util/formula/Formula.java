@@ -1,20 +1,19 @@
-package com.itpaths.rules.price.util;
+package com.itpaths.rules.price.util.formula;
 
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
 
 import static java.lang.Math.*;
 
-public class FormulaUtil {
+public class Formula {
     private Double param[];
     private Double E1[];
     private Double DS[];
 
-    public FormulaUtil(Double param[], Double[] E1, Double[] DS) {
+    public Formula(Double param[], Double[] E1, Double[] DS) {
         this.param = param;
         this.E1 = E1;
         this.DS = DS;
-
     }
 
     public double roundOff(double num, int place) {
@@ -172,5 +171,61 @@ public class FormulaUtil {
         double c = (2 * min(param[33], 1));
         return max(max(a, b), c);
         //return max(max((param[16] * param[18]), (2 * min(param[32], 1))), (2 * min(param[33], 1)));
+    }
+
+    public Double TKT_C_D_BRKPNT_1_U(Double P1) {
+        return P1;
+    }
+
+    public Double TKT_C_D_BRKPNT_1_I(Double P1) {
+        return P1;
+    }
+
+    public Double TKT_C_D_BRKPNT_1BIS_U(Double P1) {
+        return P1 - 1;
+    }
+
+    public Double TKT_C_D_BRKPNT_2_U(Double P1) {
+        return P1 - (P1 - 1) % 3 + 1;
+    }
+
+    public Double TKT_C_D_BRKPNT_2_I(Double P1) {
+        return P1 - (P1 - 1) % 3 + 1;
+    }
+
+    public Double TKT_C_D_BRKPNT_3_U(Double P1) {
+        return P1 - (P1 - 1) % 5 + 2;
+    }
+
+    public Double TKT_C_D_BRKPNT_3_I(Double P1) {
+        return P1 - (P1 - 1) % 5 + 2;
+    }
+
+    public Double TKT_C_D_BRKPNT_4_U(Double P1) {
+        return P1 - (P1 - 1) % 5 + 4;
+    }
+
+    public Double TKT_C_D_BRKPNT_4_I(Double P1) {
+        return P1 - (P1 - 1) % 5 + 4;
+    }
+
+    public Double TKT_C_D_BRKPNT_5_U(Double P1) {
+        return P1 - (P1 - 1) % 5 + 2;
+    }
+
+    public Double TKT_C_D_BRKPNT_5_I(Double P1) {
+        return P1 - (P1 - 1) % 5 + 2;
+    }
+
+    public double RT_FIXED() {
+        return RT_FIXED_BASE() - RT_FIXED_DEBET();
+    }
+
+    public double RT_FIXED_BASE() {
+        return (param[20] + param[15] + param[21]) + (param[36] * (param[18] - 1));
+    }
+
+    public double RT_FIXED_DEBET() {
+        return roundOff(RT_FIXED_BASE() * param[24], 2);
     }
 }
