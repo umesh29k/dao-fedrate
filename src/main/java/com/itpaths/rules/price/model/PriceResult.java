@@ -18,7 +18,7 @@ public class PriceResult {
     @ApiModelProperty(notes = "DIABOLO amount", example = "0.0 EUR")
     private Double diabolo_amt_eur;
     @ApiModelProperty(notes = "Status", example = "SAS_PRICE_ERR")
-    private String status;
+    private StringBuffer status;
 
     public PriceResult() {
         this.total_price_eur = 0d;
@@ -26,7 +26,7 @@ public class PriceResult {
         this.mobib_price_eur = 0d;
         this.mobib_tarif_code = "";
         this.diabolo_amt_eur = 0d;
-        this.status = status;
+        this.status = new StringBuffer();
     }
 
     @Override

@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.List;
 
 public interface PriceCodeRepository extends JpaRepository<PriceCode, Integer>, JpaSpecificationExecutor<PriceCode> {
-    @Query("SELECT pc FROM PriceCode pc where pc.pcVrsn in (SELECT max(pcv.pcVrsn) from PriceCode pcv where pcv.priceCd=:priceCd)")
+    @Query("SELECT pc FROM PriceCode pc where pc.pcVrsn in (SELECT max(pcv.pcVrsn) from PriceCode pcv where pcv.priceCd=:priceCd) and pc.timeStamp in (SELECT max(pcv.timeStamp) from PriceCode pcv where pcv.priceCd=:priceCd)")
     public List<PriceCode> findByPriceCd(String priceCd);
 
     public List<PriceCode> findByTktTypeId(String tktTypeId);

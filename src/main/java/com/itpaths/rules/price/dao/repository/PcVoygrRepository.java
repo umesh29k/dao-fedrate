@@ -5,5 +5,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 public interface PcVoygrRepository extends JpaRepository<PcVoygr, Integer>, JpaSpecificationExecutor<PcVoygr> {
-    public PcVoygr findByVoygrId(String voygrId);
+    public PcVoygr findByPriceCdAndPcVrsnAndVoygrId(String priceCd, Integer pcVrsn, String voygrId);
 }
