@@ -48,8 +48,8 @@ public class Swag extends WebMvcConfigurationSupport {
     }
 
     private ApiInfo apiInfo(String version) {
-        return new ApiInfoBuilder().title("Calculate Payment")
-                .description("Calculate Payment API")
+        return new ApiInfoBuilder().title("Fedrate")
+                .description("Database Fedration API")
                 .version(version)
                 .license("Apache 2.0")
                 .licenseUrl("http://www.apache.org/licenses/LICENSE-2.0.html")

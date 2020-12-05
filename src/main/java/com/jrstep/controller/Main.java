@@ -18,16 +18,32 @@ import java.util.List;
 public class Main {
     @Autowired
     private DataRetrievalService dataRetrievalService;
-    /*@Autowired
-    InsertService insertService;*/
+
     @ApiParam(
             name = "Object",
             type = "Request",
-            value = "Retrieval request criteria",
-            example = "Get Details",
+            value = "Sync Data",
+            example = "Sync Data",
             required = true)
     @PostMapping("/get/data")
-    public List<RInput> calculatePayment(@RequestBody RInput input) {
+    public List<RInput> sync(@RequestBody RInput input) {
+        List<RInput> dataResult = null;
+        try {
+            dataRetrievalService.calculate();
+        } catch (ApiException e) {
+            e.printStackTrace();
+        }
+        return dataResult;
+    }
+
+    @ApiParam(
+            name = "Object",
+            type = "Request",
+            value = "Get Report",
+            example = "Get Report",
+            required = true)
+    @PostMapping("/get/report")
+    public List<RInput> getReport(@RequestBody RInput input) {
         List<RInput> dataResult = null;
         try {
             dataRetrievalService.calculate();

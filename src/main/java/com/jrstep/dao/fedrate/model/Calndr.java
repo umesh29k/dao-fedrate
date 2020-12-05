@@ -1,4 +1,4 @@
-package com.jrstep.dao.remote.model;
+package com.jrstep.dao.fedrate.model;
 
 import lombok.Data;
 
@@ -49,20 +49,4 @@ public class Calndr implements Serializable {
     @Column(name = "TIME_STAMP")
     private String timeStamp;
 
-    @Override
-    public String toString() {
-        return "Calndr{" +
-                "id=" + id +
-                ", calndrDate='" + calndrDate + '\'' +
-                ", stsCd='" + stsCd + '\'' +
-                ", calndrDayInWk=" + calndrDayInWk +
-                ", calndrDayInYr=" + calndrDayInYr +
-                ", calndrHoliday='" + calndrHoliday + '\'' +
-                ", calndrWkNo=" + calndrWkNo +
-                ", calndrHighSeasn='" + calndrHighSeasn + '\'' +
-                ", operBadgeId='" + operBadgeId + '\'' +
-                ", operId='" + operId + '\'' +
-                ", timeStamp='" + timeStamp + '\'' +
-                '}';
-    }
 }
