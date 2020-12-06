@@ -28,5 +28,4 @@ public class Students implements Serializable {
 
     @Column(name = "dob")
     private Date dob;
-
 }
